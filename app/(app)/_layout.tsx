@@ -2,17 +2,30 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, Clock, BarChart2, User } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 import { useBabyStore } from '@/store/baby.store';
 import { useLogStore } from '@/store/log.store';
 
-function TabIcon({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
+const ACTIVE = '#C8A97E';
+const INACTIVE = '#9BA3C2';
+
+function TabIcon({
+  Icon,
+  label,
+  focused,
+}: {
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  label: string;
+  focused: boolean;
+}) {
+  const color = focused ? ACTIVE : INACTIVE;
   return (
-    <View style={{ alignItems: 'center', gap: 2, paddingTop: 8 }}>
-      <Text style={{ fontSize: 21, opacity: focused ? 1 : 0.4 }}>{icon}</Text>
+    <View style={{ alignItems: 'center', gap: 3, paddingTop: 8 }}>
+      <Icon size={22} color={color} strokeWidth={focused ? 2.2 : 1.8} />
       <Text
         style={{
-          color: focused ? Colors.aurora : '#9CA3AF',
+          color,
           fontSize: 10,
           fontFamily: 'DMSans_500Medium',
           letterSpacing: 0.3,
@@ -22,11 +35,11 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
       </Text>
       <View
         style={{
-          marginTop: 3,
-          width: focused ? 18 : 0,
+          marginTop: 2,
+          width: focused ? 16 : 0,
           height: 3,
           borderRadius: 99,
-          backgroundColor: focused ? Colors.aurora : 'transparent',
+          backgroundColor: focused ? ACTIVE : 'transparent',
         }}
       />
     </View>
@@ -59,6 +72,8 @@ export default function AppLayout() {
           backgroundColor: '#FFFFFF',
           borderTopColor: 'rgba(0,0,0,0.06)',
           borderTopWidth: 1,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
           height: 65 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 0,
@@ -74,25 +89,25 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" label="Home" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Home} label="Home" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="timeline"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="📋" label="Timeline" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Clock} label="Timeline" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="insights"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="📊" label="Insights" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={BarChart2} label="Insights" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="baby"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="👶" label="Baby" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={User} label="Baby" focused={focused} />,
         }}
       />
     </Tabs>
