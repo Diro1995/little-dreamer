@@ -8,18 +8,27 @@ import { useLogStore } from '@/store/log.store';
 
 function TabIcon({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
   return (
-    <View style={{ alignItems: 'center', gap: 3, paddingTop: 6 }}>
-      <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icon}</Text>
+    <View style={{ alignItems: 'center', gap: 2, paddingTop: 8 }}>
+      <Text style={{ fontSize: 21, opacity: focused ? 1 : 0.4 }}>{icon}</Text>
       <Text
         style={{
-          color: focused ? Colors.aurora : Colors.starlight,
+          color: focused ? Colors.aurora : '#9CA3AF',
           fontSize: 10,
           fontFamily: 'DMSans_500Medium',
-          opacity: focused ? 1 : 0.6,
+          letterSpacing: 0.3,
         }}
       >
         {label}
       </Text>
+      <View
+        style={{
+          marginTop: 3,
+          width: focused ? 18 : 0,
+          height: 3,
+          borderRadius: 99,
+          backgroundColor: focused ? Colors.aurora : 'transparent',
+        }}
+      />
     </View>
   );
 }
@@ -47,12 +56,17 @@ export default function AppLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.dusk,
-          borderTopColor: Colors.border,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: 'rgba(0,0,0,0.06)',
           borderTopWidth: 1,
-          height: 60 + insets.bottom,
+          height: 65 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
+          elevation: 12,
         },
         tabBarShowLabel: false,
       }}
