@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Little Steps",
+    "slug": "little-dreamer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "littledreamer",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D0F1A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.littledreamer.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D0F1A"
+      },
+      "package": "com.littledreamer.app",
+      "permissions": ["NOTIFICATIONS", "VIBRATE"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

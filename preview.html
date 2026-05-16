@@ -1,0 +1,2748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Little Steps — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --midnight: #EEF2FF;
+    --dusk: rgba(255,255,255,0.85);
+    --twilight: rgba(215,212,248,0.85);
+    --aurora: #A0722A;
+    --aurora-light: #C49040;
+    --moonrise: #1C1A38;
+    --starlight: #6A6898;
+    --sleep-glow: #5468C4;
+    --feed-glow: #C4723A;
+    --diaper-glow: #3AAA8C;
+    --pump-glow: #9A4AC4;
+    --temp-glow: #C87030;
+    --meds-glow: #2AAABB;
+    --journal-glow: #A0722A;
+    --noise-glow: #7A60C4;
+    --success: #2A9E68;
+    --warning: #B89820;
+    --danger: #C43A3A;
+    --border: rgba(100,90,180,0.15);
+    --card-bg: rgba(255,255,255,0.52);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 25%, rgba(255,168,140,0.62) 0%, transparent 100%),
+      radial-gradient(ellipse 45% 40% at 4%  8%,  rgba(255,100,110,0.42) 0%, transparent 100%),
+      radial-gradient(ellipse 42% 38% at 68% 8%,  rgba(185,135,238,0.48) 0%, transparent 100%),
+      radial-gradient(ellipse 38% 34% at 88% 80%, rgba(120,170,255,0.38) 0%, transparent 100%),
+      radial-gradient(ellipse 52% 44% at 50% 72%, rgba(255,195,110,0.28) 0%, transparent 100%),
+      #EEF2FF;
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 120px rgba(100,80,180,0.25), inset 0 0 0 1px rgba(255,255,255,0.6);
+  }
+
+  /* On small screens, fill the viewport */
+  @media (max-width: 420px) {
+    body { align-items: flex-start; }
+    .phone { width: 100vw; height: 100vh; border-radius: 0; }
+  }
+
+  /* ── Screen system ── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* ── Star field ── */
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: rgba(100,80,180,0.18);
+    border-radius: 50%;
+    animation: twinkle var(--dur, 6s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--max-op, 0.6); }
+    50% { opacity: calc(var(--max-op, 0.6) * 0.2); }
+  }
+
+  /* ── Typography helpers ── */
+  .playfair         { font-family: 'Playfair Display', serif; font-weight: 400; }
+  .playfair-italic  { font-family: 'Playfair Display', serif; font-style: italic; }
+  .playfair-bold    { font-family: 'Playfair Display', serif; font-weight: 700; }
+  .dm               { font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .dm-medium        { font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .dm-bold          { font-family: 'DM Sans', sans-serif; font-weight: 700; }
+
+  .text-moonrise  { color: var(--moonrise); }
+  .text-starlight { color: var(--starlight); }
+  .text-aurora    { color: var(--aurora); }
+  .text-success   { color: var(--success); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  /* ── Button ── */
+  .btn-primary {
+    width: 100%;
+    height: 60px;
+    border-radius: 30px;
+    border: none;
+    background: linear-gradient(90deg, var(--aurora), var(--aurora-light));
+    color: #1C1A38;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+
+  .btn-ghost {
+    width: 100%;
+    height: 52px;
+    border-radius: 30px;
+    border: none;
+    background: transparent;
+    color: var(--aurora);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  /* ── Labels ── */
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--starlight);
+  }
+
+  /* ── Safe area placeholder ── */
+  .safe-top    { height: 44px; flex-shrink: 0; }
+  .safe-bottom { height: 34px; flex-shrink: 0; }
+
+  /* ═══════════════════════════════════════════
+     SCREEN: WELCOME
+  ═══════════════════════════════════════════ */
+  #welcome .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .moon-icon {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    margin-bottom: 32px;
+    animation: floatMoon 4s ease-in-out infinite;
+  }
+  @keyframes floatMoon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .moon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--aurora);
+    box-shadow: 0 0 40px rgba(200,169,126,0.6);
+    overflow: hidden;
+    position: relative;
+  }
+  .moon-cutout {
+    position: absolute;
+    top: -8px; right: -12px;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--midnight);
+  }
+  .moon-glow {
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: var(--aurora);
+    opacity: 0.06;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    filter: blur(30px);
+  }
+
+  .welcome-title {
+    font-size: 40px;
+    color: var(--aurora);
+    text-align: center;
+    margin-bottom: 10px;
+    animation: fadeUp 0.8s ease 0.5s both;
+  }
+  .welcome-tagline {
+    color: var(--starlight);
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 64px;
+    animation: fadeUp 0.8s ease 0.7s both;
+  }
+  .welcome-btns {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeUp 0.8s ease 1s both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════════
+     SCREEN: ONBOARDING STEP 1
+  ═══════════════════════════════════════════ */
+  .onboard-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 28px;
+    position: relative;
+    z-index: 1;
+    overflow-y: auto;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--aurora);
+    font-size: 28px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+  .skip-btn {
+    background: none;
+    border: none;
+    color: var(--starlight);
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .step-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot {
+    height: 7px;
+    border-radius: 4px;
+    background: var(--twilight);
+    transition: width 0.3s, background 0.3s;
+  }
+  .dot.active { background: var(--aurora); }
+
+  .onboard-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--starlight);
+    margin-bottom: 10px;
+  }
+  .step-question {
+    font-size: 30px;
+    color: var(--moonrise);
+    line-height: 1.3;
+    margin-bottom: 36px;
+  }
+
+  .underline-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--border);
+    color: var(--moonrise);
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    text-align: center;
+    padding: 10px 0;
+    outline: none;
+    margin-bottom: 32px;
+    transition: border-color 0.2s;
+  }
+  .underline-input:focus { border-bottom-color: var(--aurora); }
+  .underline-input::placeholder { color: rgba(155,163,194,0.5); }
+
+  .sub-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--starlight);
+    margin-bottom: 10px;
+  }
+  .sub-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--border);
+    color: var(--moonrise);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    text-align: center;
+    padding: 10px 0;
+    outline: none;
+    margin-bottom: 48px;
+    transition: border-color 0.2s;
+  }
+  .sub-input:focus { border-bottom-color: var(--aurora); }
+  .sub-input::placeholder { color: rgba(155,163,194,0.5); }
+
+  .onboard-footer { padding-bottom: 24px; }
+
+  /* ═══════════════════════════════════════════
+     SCREEN: HOME
+  ═══════════════════════════════════════════ */
+  #home .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+    scrollbar-width: none;
+  }
+  #home .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* Greeting */
+  .greeting-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0 16px;
+  }
+  .avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid var(--aurora);
+    background: rgba(200,169,126,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--aurora);
+    flex-shrink: 0;
+  }
+  .greeting-name { color: var(--moonrise); font-size: 15px; font-weight: 500; }
+  .greeting-sub  { color: var(--starlight); font-size: 12px; margin-top: 1px; }
+
+  /* Sleep status card */
+  .sleep-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sleep-glow-bg {
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--sleep-glow);
+    opacity: 0.06;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.06; transform: scale(1); }
+    50% { opacity: 0.12; transform: scale(1.1); }
+  }
+  .sleep-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .sleep-badge-text {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--sleep-glow);
+  }
+  .sleep-time {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--moonrise);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  .sleep-sub { font-size: 13px; color: var(--starlight); margin-bottom: 14px; }
+  .sleep-end-btn {
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    background: var(--sleep-glow);
+    color: var(--midnight);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .sleep-end-btn:active { transform: scale(0.96); }
+
+  /* Nap prediction */
+  .nap-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nap-icon {
+    width: 44px; height: 44px;
+    border-radius: 22px;
+    background: rgba(107,127,212,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .nap-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--starlight); }
+  .nap-time  { font-size: 20px; font-weight: 700; color: var(--moonrise); margin-top: 2px; }
+  .nap-until { color: var(--sleep-glow); font-size: 14px; font-weight: 500; margin-left: auto; }
+
+  /* Section header */
+  .section-header {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--starlight);
+    margin-bottom: 12px;
+  }
+
+  /* Quick log grid */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .log-tile {
+    aspect-ratio: 1;
+    border-radius: 20px;
+    border: 1px solid var(--tile-color, rgba(200,169,126,0.3));
+    background: color-mix(in srgb, var(--tile-color, #C8A97E) 12%, transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: transform 0.12s;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--tile-color, #C8A97E) 25%, transparent);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .log-tile:active { transform: scale(0.92); }
+  .log-tile .tile-icon { font-size: 40px; line-height: 1; }
+  .log-tile .tile-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--tile-color, var(--aurora));
+    letter-spacing: 0.3px;
+  }
+
+  /* Today stats */
+  .stats-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .stat-pill {
+    flex: 1;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .stat-val  { font-size: 28px; font-weight: 700; color: var(--moonrise); font-variant-numeric: tabular-nums; }
+  .stat-lbl  { font-size: 10px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--starlight); margin-top: 2px; }
+
+  /* Recent feed */
+  .recent-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .recent-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(155,163,194,0.08);
+    gap: 12px;
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-dot {
+    width: 3px;
+    height: 36px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .recent-type  { font-size: 15px; font-weight: 500; color: var(--moonrise); }
+  .recent-detail{ font-size: 13px; color: var(--starlight); margin-top: 1px; }
+  .recent-time  { font-size: 13px; color: var(--starlight); margin-left: auto; flex-shrink: 0; }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex;
+    background: var(--dusk);
+    border-top: 1px solid var(--border);
+    padding: 6px 0 0;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 0 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-icon  { font-size: 22px; }
+  .tab-label { font-size: 10px; font-weight: 500; }
+  .tab-item.active .tab-label { color: var(--aurora); }
+  .tab-item:not(.active) .tab-icon  { opacity: 0.45; }
+  .tab-item:not(.active) .tab-label { color: var(--starlight); opacity: 0.6; }
+
+  /* ═══════════════════════════════════════════
+     BOTTOM SHEET
+  ═══════════════════════════════════════════ */
+  .sheet-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .sheet-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--dusk);
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 101;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .sheet.open { transform: translateY(0); }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: var(--starlight);
+    opacity: 0.35;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+  .sheet-content {
+    padding: 16px 20px 32px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .sheet-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--moonrise);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* Diaper sheet */
+  .diaper-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .diaper-option {
+    aspect-ratio: 1.4;
+    border-radius: 20px;
+    background: rgba(107,196,166,0.1);
+    border: 1.5px solid rgba(107,196,166,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+    box-shadow: 0 4px 16px rgba(107,196,166,0.15);
+  }
+  .diaper-option:active { transform: scale(0.94); background: rgba(107,196,166,0.2); }
+  .diaper-option span:first-child { font-size: 34px; }
+  .diaper-option span:last-child  { font-size: 15px; font-weight: 500; color: var(--moonrise); }
+
+  /* Sleep sheet */
+  .tabs-row {
+    display: flex;
+    background: var(--twilight);
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--starlight);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tab-btn.active { background: var(--dusk); color: var(--moonrise); }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--starlight);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .time-display {
+    background: var(--twilight);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--moonrise);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .pill {
+    padding: 7px 14px;
+    border-radius: 99px;
+    background: var(--twilight);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--starlight);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .pill.active {
+    background: rgba(107,127,212,0.2);
+    border-color: var(--sleep-glow);
+    color: var(--sleep-glow);
+  }
+
+  /* Feed sheet */
+  .side-row { display: flex; gap: 10px; margin-bottom: 24px; }
+  .side-btn {
+    flex: 1;
+    height: 80px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: var(--twilight);
+    color: var(--starlight);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .side-btn .side-big { font-size: 28px; font-weight: 700; }
+  .side-btn.active {
+    background: rgba(212,145,107,0.15);
+    border-color: var(--feed-glow);
+    color: var(--feed-glow);
+  }
+
+  .vol-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .vol-btn {
+    width: 52px; height: 52px;
+    border-radius: 26px;
+    background: var(--twilight);
+    border: 1px solid var(--border);
+    color: var(--moonrise);
+    font-size: 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+  }
+  .vol-btn:active { transform: scale(0.92); }
+  .vol-number { font-size: 48px; font-weight: 700; color: var(--moonrise); font-variant-numeric: tabular-nums; min-width: 100px; text-align: center; }
+  .vol-unit   { font-size: 14px; color: var(--starlight); }
+
+  /* Success toast */
+  .toast {
+    position: absolute;
+    top: 56px;
+    left: 16px; right: 16px;
+    background: var(--twilight);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    color: var(--moonrise);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 200;
+    transform: translateY(-80px);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Timeline screen ── */
+  .timeline-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-list::-webkit-scrollbar { display: none; }
+  .day-divider {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--midnight);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .day-line { flex: 1; height: 1px; background: var(--border); }
+  .day-label { padding: 0 12px; font-size: 11px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--starlight); }
+  .tl-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(155,163,194,0.07);
+    gap: 12px;
+  }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .tl-main { flex: 1; }
+  .tl-type   { font-size: 15px; font-weight: 500; color: var(--moonrise); }
+  .tl-detail { font-size: 13px; color: var(--starlight); margin-top: 1px; }
+  .tl-time   { font-size: 13px; color: var(--starlight); flex-shrink: 0; }
+
+  /* Insights screen */
+  .insights-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    padding: 0 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  .insights-list::-webkit-scrollbar { display: none; }
+
+  .metric-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .metric-box {
+    flex: 1;
+    background: var(--twilight);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+  }
+  .metric-val { font-size: 22px; font-weight: 700; color: var(--moonrise); }
+  .metric-lbl { font-size: 11px; color: var(--starlight); margin-top: 2px; }
+
+  /* Mini bar chart */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 80px;
+    margin-bottom: 8px;
+  }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-fill {
+    width: 100%;
+    border-radius: 4px;
+    background: var(--sleep-glow);
+    min-height: 4px;
+    transition: height 0.5s ease;
+  }
+  .bar-lbl { font-size: 9px; color: var(--starlight); }
+
+  /* ── White noise mini-player ── */
+  .mini-player {
+    position: absolute;
+    bottom: 56px; left: 0; right: 0;
+    background: var(--dusk);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .mini-player.show { transform: translateY(0); }
+  .mini-player-icon { font-size: 22px; flex-shrink: 0; }
+  .waveform { display: flex; gap: 3px; align-items: center; height: 20px; flex-shrink: 0; }
+  .wave-bar {
+    width: 3px; border-radius: 2px;
+    background: var(--noise-glow);
+    animation: wave var(--spd, 0.8s) ease-in-out infinite;
+    animation-delay: var(--del, 0s);
+  }
+  @keyframes wave {
+    0%, 100% { height: 4px; }
+    50% { height: 16px; }
+  }
+  .mini-type-btns { display: flex; gap: 4px; }
+  .mini-type-btn {
+    padding: 3px 8px; border-radius: 99px; border: 1px solid var(--border);
+    background: transparent; color: var(--starlight); font-size: 11px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .mini-type-btn.active {
+    background: rgba(155,126,212,0.2); border-color: var(--noise-glow); color: var(--noise-glow);
+  }
+  .mini-timer { font-size: 13px; font-weight: 700; color: var(--moonrise); font-variant-numeric: tabular-nums; margin-left: auto; }
+  .mini-stop {
+    width: 32px; height: 32px; border-radius: 16px; border: none;
+    background: rgba(212,107,107,0.2); color: var(--danger);
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── Temperature sheet ── */
+  .temp-display-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 0 16px;
+  }
+  .temp-ring {
+    width: 140px; height: 140px; border-radius: 70px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 3px solid var(--success);
+    background: rgba(107,212,148,0.08);
+    transition: border-color 0.4s, background 0.4s;
+    margin-bottom: 10px;
+  }
+  .temp-number {
+    font-size: 44px; font-weight: 700; color: var(--moonrise);
+    font-variant-numeric: tabular-nums; line-height: 1;
+    transition: color 0.4s;
+  }
+  .temp-unit { font-size: 16px; color: var(--starlight); margin-top: 2px; }
+  .temp-status { font-size: 13px; font-weight: 500; color: var(--success); transition: color 0.4s; }
+  .temp-unit-toggle {
+    display: flex; background: var(--twilight); border-radius: 99px;
+    padding: 3px; width: 100px; margin: 0 auto 20px;
+  }
+  .temp-unit-btn {
+    flex: 1; padding: 5px; border-radius: 99px; border: none;
+    background: transparent; color: var(--starlight);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .temp-unit-btn.active { background: var(--dusk); color: var(--moonrise); }
+  .temp-adj-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 24px; margin-bottom: 20px;
+  }
+  .temp-adj {
+    width: 52px; height: 52px; border-radius: 26px;
+    background: var(--twilight); border: 1px solid var(--border);
+    color: var(--moonrise); font-size: 28px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.1s;
+  }
+  .temp-adj:active { transform: scale(0.92); }
+
+  /* ── Meds sheet ── */
+  .med-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid rgba(155,163,194,0.08);
+    cursor: pointer;
+  }
+  .med-item:last-child { border-bottom: none; }
+  .med-dot {
+    width: 36px; height: 36px; border-radius: 18px; flex-shrink: 0;
+    background: rgba(126,200,212,0.15); border: 1px solid rgba(126,200,212,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .med-name { font-size: 15px; font-weight: 500; color: var(--moonrise); }
+  .med-dose { font-size: 12px; color: var(--starlight); margin-top: 1px; }
+  .med-log-btn {
+    margin-left: auto; padding: 6px 14px; border-radius: 99px;
+    background: rgba(126,200,212,0.15); border: 1px solid rgba(126,200,212,0.3);
+    color: var(--meds-glow); font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .med-log-btn:active { background: rgba(126,200,212,0.3); }
+  .add-med-form {
+    background: var(--twilight); border-radius: 16px;
+    padding: 14px; margin-top: 12px; display: none;
+  }
+  .add-med-form.open { display: block; }
+  .med-input {
+    width: 100%; background: transparent; border: none;
+    border-bottom: 1px solid var(--border); color: var(--moonrise);
+    font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 8px 0;
+    outline: none; margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .med-input:focus { border-bottom-color: var(--meds-glow); }
+  .med-input::placeholder { color: rgba(155,163,194,0.5); }
+
+  /* ── Journal sheet ── */
+  .journal-type-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .journal-chip {
+    padding: 6px 12px; border-radius: 99px;
+    background: var(--twilight); border: 1px solid var(--border);
+    font-size: 12px; font-weight: 500; color: var(--starlight); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .journal-chip.active {
+    background: rgba(200,169,126,0.2); border-color: var(--aurora); color: var(--aurora);
+  }
+  .milestone-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.2s, max-height 0.3s; }
+  .milestone-chips.show { opacity: 1; max-height: 120px; }
+  .milestone-chip {
+    padding: 5px 10px; border-radius: 99px;
+    background: rgba(200,169,126,0.1); border: 1px solid rgba(200,169,126,0.25);
+    font-size: 11px; font-weight: 500; color: var(--aurora-light); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .milestone-chip.active { background: rgba(200,169,126,0.25); border-color: var(--aurora); }
+  .journal-textarea {
+    width: 100%; background: var(--twilight); border: 1px solid var(--border);
+    border-radius: 14px; color: var(--moonrise);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 12px;
+    outline: none; resize: none; min-height: 100px;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+  .journal-textarea:focus { border-color: var(--aurora); }
+  .journal-textarea::placeholder { color: rgba(155,163,194,0.4); }
+
+  /* ── Day/night window sliders ── */
+  .window-bar-wrap { margin-bottom: 6px; }
+  .window-bar {
+    height: 28px; border-radius: 14px; overflow: hidden;
+    display: flex; margin-bottom: 4px;
+  }
+  .window-seg-night { background: var(--sleep-glow); opacity: 0.5; height: 100%; transition: width 0.15s; }
+  .window-seg-day   { background: var(--aurora); height: 100%; transition: width 0.15s; }
+  .window-ticks { display: flex; justify-content: space-between; padding: 0 2px; margin-bottom: 20px; }
+  .window-tick { font-size: 9px; color: var(--starlight); }
+  .window-slider-row { margin-bottom: 20px; }
+  .window-slider-label {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .window-slider-name { font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--starlight); }
+  .window-slider-val { font-size: 15px; font-weight: 700; color: var(--moonrise); }
+  input[type=range].window-range {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+  }
+  input[type=range].window-range::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; border-radius: 11px;
+    background: var(--aurora); box-shadow: 0 2px 8px rgba(200,169,126,0.5); cursor: pointer;
+  }
+  #dayRangeStart { background: linear-gradient(to right, var(--sleep-glow) 0%, var(--sleep-glow) 25%, var(--twilight) 25%); }
+  #dayRangeEnd   { background: linear-gradient(to right, var(--aurora) 0%, var(--aurora) 83%, var(--twilight) 83%); }
+
+  /* ── Premature birth cards ── */
+  .premature-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px; border-radius: 16px;
+    background: var(--twilight); border: 1.5px solid var(--border);
+    cursor: pointer; transition: all 0.15s; margin-bottom: 8px;
+  }
+  .premature-card.active {
+    background: rgba(200,169,126,0.12); border-color: var(--aurora);
+  }
+  .premature-card-icon { font-size: 22px; flex-shrink: 0; }
+  .premature-card-label { font-size: 15px; font-weight: 500; color: var(--moonrise); }
+  .premature-sub { font-size: 12px; color: var(--starlight); margin-top: 1px; }
+
+  /* ── Post-onboarding welcome ── */
+  #onboard-welcome .content {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 0 28px 40px; position: relative; z-index: 1;
+    text-align: center;
+  }
+  .welcome-star { font-size: 56px; margin-bottom: 24px; animation: floatMoon 4s ease-in-out infinite; }
+  .welcome-headline {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 28px; color: var(--moonrise); line-height: 1.35; margin-bottom: 8px;
+  }
+  .welcome-name-hl { color: var(--aurora); }
+  .welcome-sub { font-size: 14px; color: var(--starlight); margin-bottom: 36px; }
+  .benefit-row { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 36px; }
+  .benefit-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 12px 14px; text-align: left;
+  }
+  .benefit-icon { font-size: 24px; flex-shrink: 0; }
+  .benefit-text { font-size: 13px; color: var(--starlight); }
+  .benefit-text strong { color: var(--moonrise); display: block; font-size: 14px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- ══════════════ SCREEN: WELCOME ══════════════ -->
+  <div class="screen active" id="welcome">
+    <div class="stars" id="starsWelcome"></div>
+    <div class="safe-top"></div>
+    <div class="content">
+      <div class="moon-glow"></div>
+      <div class="moon-icon">
+        <div class="moon-circle">
+          <div class="moon-cutout"></div>
+        </div>
+      </div>
+      <p class="playfair-italic welcome-title">Little Steps</p>
+      <p class="dm welcome-tagline">every little moment, remembered</p>
+      <div class="welcome-btns">
+        <button class="btn-primary" onclick="goTo('onboard1')">Get Started</button>
+        <button class="btn-ghost" onclick="goTo('onboard1')">I have an account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: ONBOARD 1 — NAME ══════════════ -->
+  <div class="screen" id="onboard1">
+    <div class="stars" id="starsO1"></div>
+    <div class="safe-top"></div>
+    <div class="onboard-wrap">
+      <div class="step-header">
+        <button class="back-btn" onclick="goTo('welcome')">‹</button>
+        <div class="step-dots">
+          <div class="dot active" style="width:20px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+      <div class="onboard-content">
+        <p class="step-label">Step 1 of 5</p>
+        <p class="playfair-italic step-question">Welcome! What's your<br>baby's name?</p>
+        <input class="underline-input" placeholder="e.g. Emma, Youssef, Lara..." id="babyNameInput" />
+        <p style="color:var(--starlight);font-size:13px;text-align:center;margin-top:-20px;margin-bottom:24px">Any name or nickname works perfectly 🌙</p>
+        <input class="sub-input" placeholder="Your name..." id="caregiverNameInput" style="display:none" />
+      </div>
+      <div class="onboard-footer">
+        <button class="btn-primary" onclick="goOnboard2()">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: ONBOARD 2 — BIRTHDAY ══════════════ -->
+  <div class="screen" id="onboard2">
+    <div class="stars" id="starsO2"></div>
+    <div class="safe-top"></div>
+    <div class="onboard-wrap">
+      <div class="step-header">
+        <button class="back-btn" onclick="goTo('onboard1')">‹</button>
+        <div class="step-dots">
+          <div class="dot" style="width:7px"></div>
+          <div class="dot active" style="width:20px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+      <div class="onboard-content" style="justify-content:flex-start;padding-top:8px">
+        <p class="step-label">Step 2 of 5</p>
+        <p class="playfair-italic step-question" style="margin-bottom:12px">When was<br><span id="babyNameQ">your little one</span> born?</p>
+        <p id="ageLabel" style="color:var(--aurora);font-size:14px;font-weight:500;margin-bottom:14px;min-height:20px"></p>
+        <div style="background:var(--twilight);border-radius:14px;padding:14px;margin-bottom:20px">
+          <input type="date" id="dobInput" style="width:100%;background:transparent;border:none;color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:18px;outline:none;text-align:center;" />
+        </div>
+
+        <p class="sub-label" style="margin-bottom:10px">Was <span id="babyNamePrem">your little one</span> born early?</p>
+        <div id="premCards">
+          <div class="premature-card" id="premCard-term" onclick="selectPremature('term')">
+            <span class="premature-card-icon">🌕</span>
+            <div><div class="premature-card-label">Born at term</div><div class="premature-sub">37+ weeks</div></div>
+          </div>
+          <div class="premature-card" id="premCard-early" onclick="selectPremature('early')">
+            <span class="premature-card-icon">🌙</span>
+            <div><div class="premature-card-label">Born early</div><div class="premature-sub">Before 37 weeks</div></div>
+          </div>
+          <div class="premature-card" id="premCard-unknown" onclick="selectPremature('unknown')">
+            <span class="premature-card-icon">🌓</span>
+            <div><div class="premature-card-label">Not sure</div><div class="premature-sub">I'll add this later</div></div>
+          </div>
+        </div>
+
+        <div id="prematureExtra" style="display:none;margin-top:12px">
+          <div style="display:flex;background:var(--twilight);border-radius:99px;padding:3px;margin-bottom:14px">
+            <button onclick="setPremMode('weeks',this)" id="premModeWeeks" style="flex:1;padding:7px;border-radius:99px;border:none;background:var(--dusk);color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">Weeks early</button>
+            <button onclick="setPremMode('duedate',this)" id="premModeDue" style="flex:1;padding:7px;border-radius:99px;border:none;background:transparent;color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer">Due date</button>
+          </div>
+          <div id="premWeeksWrap" style="display:flex;align-items:center;justify-content:center;gap:16px">
+            <button onclick="adjWeeksEarly(-1)" style="width:44px;height:44px;border-radius:22px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:22px;cursor:pointer">−</button>
+            <div style="text-align:center">
+              <span id="weeksEarlyNum" style="font-size:40px;font-weight:700;color:var(--moonrise)">4</span>
+              <div style="font-size:13px;color:var(--starlight)">weeks early</div>
+            </div>
+            <button onclick="adjWeeksEarly(1)" style="width:44px;height:44px;border-radius:22px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:22px;cursor:pointer">+</button>
+          </div>
+          <div id="premDueDateWrap" style="display:none;background:var(--twilight);border-radius:14px;padding:12px;margin-top:8px">
+            <input type="date" id="dueDateInput" style="width:100%;background:transparent;border:none;color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;text-align:center;" oninput="updateAgeLabel()" />
+          </div>
+          <p id="correctedAgeLabel" style="color:var(--sleep-glow);font-size:13px;text-align:center;margin-top:10px"></p>
+        </div>
+      </div>
+      <div class="onboard-footer">
+        <button class="btn-primary" onclick="goTo('onboard3meds')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: ONBOARD 3 — MEDS (NEW) ══════════════ -->
+  <div class="screen" id="onboard3meds">
+    <div class="stars" id="starsO3m"></div>
+    <div class="safe-top"></div>
+    <div class="onboard-wrap">
+      <div class="step-header">
+        <button class="back-btn" onclick="goTo('onboard2')">‹</button>
+        <div class="step-dots">
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot active" style="width:20px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+        </div>
+        <button class="skip-btn" onclick="goTo('onboard3')">Skip</button>
+      </div>
+      <div class="onboard-content" style="justify-content:flex-start;padding-top:8px;overflow-y:auto;min-height:0">
+        <p class="step-label">Step 3 of 5</p>
+        <p class="playfair-italic step-question" style="margin-bottom:8px">Any vitamins or<br>regular medicine?</p>
+        <p style="color:var(--starlight);font-size:14px;margin-bottom:24px">Set them up once, log with one tap.</p>
+
+        <!-- Yes / No choice -->
+        <div id="medsYesNo" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px">
+          <div onclick="selectMedsYesNo('yes')" id="medsOptYes" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;background:var(--twilight);border:1.5px solid var(--border);cursor:pointer;transition:all 0.15s">
+            <span style="font-size:26px">💊</span>
+            <div>
+              <div style="color:var(--moonrise);font-size:15px;font-weight:500">Yes, they do</div>
+              <div style="color:var(--starlight);font-size:13px;margin-top:2px">I'll add them now</div>
+            </div>
+          </div>
+          <div onclick="selectMedsYesNo('no')" id="medsOptNo" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;background:var(--twilight);border:1.5px solid var(--border);cursor:pointer;transition:all 0.15s">
+            <span style="font-size:26px">✨</span>
+            <div>
+              <div style="color:var(--moonrise);font-size:15px;font-weight:500">No, not right now</div>
+              <div style="color:var(--starlight);font-size:13px;margin-top:2px">Skip this step</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form — shown when Yes is selected -->
+        <div id="medsForm" style="display:none;margin-top:4px">
+          <div style="background:var(--twilight);border-radius:16px;padding:14px;margin-bottom:10px">
+            <input class="med-input" id="onboardMedName" placeholder="Medicine or vitamin name" style="margin-bottom:10px" />
+            <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
+              <input class="med-input" id="onboardMedDose" placeholder="Dose (e.g. 0.5)" style="flex:1;margin-bottom:0" />
+              <div style="display:flex;background:var(--dusk);border-radius:99px;padding:2px;flex-shrink:0">
+                <button onclick="setOnboardMedUnit('ml',this)" id="omUnitMl" style="padding:5px 10px;border-radius:99px;border:none;background:var(--aurora);color:var(--midnight);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer">ml</button>
+                <button onclick="setOnboardMedUnit('drops',this)" id="omUnitDrops" style="padding:5px 10px;border-radius:99px;border:none;background:transparent;color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer">drops</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--starlight);flex-shrink:0">Reminder</span>
+              <input type="time" id="onboardMedTime" value="08:00" style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;padding:4px 0;text-align:right" />
+            </div>
+          </div>
+          <button onclick="addOnboardMed()" style="width:100%;height:44px;border-radius:22px;border:1.5px solid var(--meds-glow);background:rgba(126,200,212,0.1);color:var(--meds-glow);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px">+ Add</button>
+          <div id="onboardMedList" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+      <div class="onboard-footer">
+        <button class="btn-primary" id="medsContinueBtn" onclick="goTo('onboard3')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: ONBOARD 4 — SLEEP PATTERN ══════════════ -->
+  <div class="screen" id="onboard3">
+    <div class="stars" id="starsO3"></div>
+    <div class="safe-top"></div>
+    <div class="onboard-wrap">
+      <div class="step-header">
+        <button class="back-btn" onclick="goTo('onboard3meds')">‹</button>
+        <div class="step-dots">
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot active" style="width:20px"></div>
+          <div class="dot" style="width:7px"></div>
+        </div>
+        <button class="skip-btn" onclick="goTo('onboard4')">Skip</button>
+      </div>
+      <div class="onboard-content">
+        <p class="step-label">Step 4 of 5</p>
+        <p class="playfair-italic step-question" style="margin-bottom:24px">How is their<br>sleep right now?</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+          <div class="sleep-opt" data-opt="chaotic" onclick="selectSleep(this)" style="background:var(--twilight);border-radius:16px;border:1.5px solid var(--border);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s">
+            <span style="font-size:26px">🌑</span>
+            <div><div style="color:var(--moonrise);font-size:15px;font-weight:500">Still figuring it out</div><div style="color:var(--starlight);font-size:13px;margin-top:2px">Chaotic / newborn phase</div></div>
+          </div>
+          <div class="sleep-opt" data-opt="emerging" onclick="selectSleep(this)" style="background:var(--twilight);border-radius:16px;border:1.5px solid var(--border);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s">
+            <span style="font-size:26px">🌓</span>
+            <div><div style="color:var(--moonrise);font-size:15px;font-weight:500">Getting more regular</div><div style="color:var(--starlight);font-size:13px;margin-top:2px">Some patterns emerging</div></div>
+          </div>
+          <div class="sleep-opt" data-opt="consistent" onclick="selectSleep(this)" style="background:var(--twilight);border-radius:16px;border:1.5px solid var(--border);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s">
+            <span style="font-size:26px">🌕</span>
+            <div><div style="color:var(--moonrise);font-size:15px;font-weight:500">Pretty consistent</div><div style="color:var(--starlight);font-size:13px;margin-top:2px">Established routine</div></div>
+          </div>
+        </div>
+        <p class="sub-label">How many naps a day?</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <button class="nap-btn" data-n="1" onclick="selectNap(this)" style="flex:1;height:52px;border-radius:12px;border:1.5px solid var(--border);background:var(--twilight);color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s">1</button>
+          <button class="nap-btn" data-n="2" onclick="selectNap(this)" style="flex:1;height:52px;border-radius:12px;border:1.5px solid var(--aurora);background:rgba(200,169,126,0.15);color:var(--aurora);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s">2</button>
+          <button class="nap-btn" data-n="3" onclick="selectNap(this)" style="flex:1;height:52px;border-radius:12px;border:1.5px solid var(--border);background:var(--twilight);color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s">3</button>
+          <button class="nap-btn" data-n="4+" onclick="selectNap(this)" style="flex:1;height:52px;border-radius:12px;border:1.5px solid var(--border);background:var(--twilight);color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s">4+</button>
+        </div>
+      </div>
+      <div class="onboard-footer">
+        <button class="btn-primary" onclick="goTo('onboard4')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: ONBOARD 5 — DAY & NIGHT WINDOWS ══════════════ -->
+  <div class="screen" id="onboard4">
+    <div class="stars" id="starsO4"></div>
+    <div class="safe-top"></div>
+    <div class="onboard-wrap">
+      <div class="step-header">
+        <button class="back-btn" onclick="goTo('onboard3')">‹</button>
+        <div class="step-dots">
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot" style="width:7px"></div>
+          <div class="dot active" style="width:20px"></div>
+        </div>
+        <button class="skip-btn" onclick="finishOnboarding()">Skip</button>
+      </div>
+      <div class="onboard-content" style="justify-content:flex-start;padding-top:4px">
+        <p class="step-label">Step 5 of 5</p>
+        <p class="playfair-italic step-question" style="margin-bottom:6px">When does your<br>day begin & end?</p>
+        <p style="color:var(--starlight);font-size:13px;margin-bottom:22px">This helps us tell naps from night sleep.</p>
+
+        <!-- 24-hour visual bar -->
+        <div class="window-bar-wrap">
+          <div class="window-bar" id="windowBar">
+            <div class="window-seg-night" id="wSegNight1" style="width:25%"></div>
+            <div class="window-seg-day"   id="wSegDay"    style="width:58.3%"></div>
+            <div class="window-seg-night" id="wSegNight2" style="width:16.7%"></div>
+          </div>
+          <div class="window-ticks">
+            <span class="window-tick">12a</span>
+            <span class="window-tick">6a</span>
+            <span class="window-tick">12p</span>
+            <span class="window-tick">6p</span>
+            <span class="window-tick">12a</span>
+          </div>
+        </div>
+
+        <!-- Summary chips -->
+        <div style="display:flex;gap:10px;margin-bottom:22px">
+          <div style="flex:1;background:rgba(200,169,126,0.1);border:1px solid rgba(200,169,126,0.25);border-radius:14px;padding:10px 12px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">🌅</div>
+            <div style="color:var(--aurora);font-size:13px;font-weight:700" id="daySummary">6:00 AM – 8:00 PM</div>
+            <div style="color:var(--starlight);font-size:10px;margin-top:1px">Day</div>
+          </div>
+          <div style="flex:1;background:rgba(107,127,212,0.1);border:1px solid rgba(107,127,212,0.25);border-radius:14px;padding:10px 12px;text-align:center">
+            <div style="font-size:18px;margin-bottom:2px">🌙</div>
+            <div style="color:var(--sleep-glow);font-size:13px;font-weight:700" id="nightSummary">8:00 PM – 6:00 AM</div>
+            <div style="color:var(--starlight);font-size:10px;margin-top:1px">Night</div>
+          </div>
+        </div>
+
+        <!-- Sliders -->
+        <div class="window-slider-row">
+          <div class="window-slider-label">
+            <span class="window-slider-name">🌅 Day starts</span>
+            <span class="window-slider-val" id="dayStartLabel">6:00 AM</span>
+          </div>
+          <input type="range" class="window-range" id="dayRangeStart" min="0" max="23" value="6" oninput="updateWindows()">
+        </div>
+        <div class="window-slider-row">
+          <div class="window-slider-label">
+            <span class="window-slider-name">🌙 Day ends</span>
+            <span class="window-slider-val" id="dayEndLabel">8:00 PM</span>
+          </div>
+          <input type="range" class="window-range" id="dayRangeEnd" min="0" max="23" value="20" oninput="updateWindows()">
+        </div>
+      </div>
+      <div class="onboard-footer">
+        <button class="btn-primary" onclick="finishOnboarding()">All done ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: POST-ONBOARDING WELCOME ══════════════ -->
+  <div class="screen" id="onboard-welcome">
+    <div class="stars" id="starsOW"></div>
+    <div class="safe-top"></div>
+    <div class="content">
+      <div class="welcome-star">🌟</div>
+      <p class="welcome-headline">Welcome to the world,<br>little <span class="welcome-name-hl" id="welcomeBabyName">dreamer</span>!</p>
+      <p class="welcome-sub">Your tracking journey starts now.</p>
+      <div class="benefit-row">
+        <div class="benefit-item">
+          <span class="benefit-icon">⚡</span>
+          <div class="benefit-text"><strong>Log in 2 taps</strong>Every entry is designed for 3am, one-handed, half-asleep.</div>
+        </div>
+        <div class="benefit-item">
+          <span class="benefit-icon">🌙</span>
+          <div class="benefit-text"><strong>Sleep predictions</strong>We learn your baby's patterns and forecast the next nap.</div>
+        </div>
+        <div class="benefit-item">
+          <span class="benefit-icon">✨</span>
+          <div class="benefit-text"><strong>Never miss a moment</strong>Milestones, notes, and memories — all in one place.</div>
+        </div>
+      </div>
+      <div class="welcome-btns" style="width:100%">
+        <button class="btn-primary" onclick="goToHome()">Let's start tracking 🌙</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: HOME ══════════════ -->
+  <div class="screen" id="home">
+    <div class="stars" id="starsHome"></div>
+    <div class="safe-top" style="height:52px"></div>
+
+    <div class="scroll-content">
+      <!-- Greeting -->
+      <div class="greeting-row">
+        <div class="avatar-circle" id="avatarInitial">S</div>
+        <div>
+          <div class="greeting-name" id="greetingName">Good evening, Sara</div>
+          <div class="greeting-sub" id="greetingSub">Amira · 7mo 2wk</div>
+        </div>
+      </div>
+
+      <!-- Sleep status -->
+      <div class="sleep-card">
+        <div class="sleep-glow-bg"></div>
+        <div class="sleep-badge">
+          <span style="font-size:18px">💤</span>
+          <span class="sleep-badge-text" id="sleepBadgeText">Sleeping now</span>
+        </div>
+        <div class="sleep-time" id="sleepTimer">1:12:34</div>
+        <div class="sleep-sub" id="sleepSub">Started at 10:20 AM</div>
+        <button class="sleep-end-btn" id="sleepEndBtn" onclick="endSleep()">Baby woke up ☀️</button>
+      </div>
+
+      <!-- Nap prediction -->
+      <div class="nap-card">
+        <div class="nap-icon">🌙</div>
+        <div>
+          <div class="nap-label">Next nap</div>
+          <div class="nap-time">~2:30 PM</div>
+        </div>
+        <div class="nap-until">In 2h 15m</div>
+      </div>
+
+      <!-- Quick log -->
+      <div class="section-header">Quick Log</div>
+      <div class="quick-grid">
+        <div class="log-tile" style="--tile-color:var(--sleep-glow)"  onclick="openSheet('sleep')">  <span class="tile-icon">😴</span><span class="tile-label">Sleep</span></div>
+        <div class="log-tile" style="--tile-color:var(--feed-glow)"   onclick="openSheet('feed')">   <span class="tile-icon">🍼</span><span class="tile-label">Feed</span></div>
+        <div class="log-tile" style="--tile-color:var(--diaper-glow)" onclick="openSheet('diaper')"> <span class="tile-icon">💧</span><span class="tile-label">Diaper</span></div>
+        <div class="log-tile" style="--tile-color:var(--pump-glow)"   onclick="openSheet('pump')">   <span class="tile-icon">🫧</span><span class="tile-label">Pump</span></div>
+        <div class="log-tile" style="--tile-color:var(--temp-glow)"   onclick="openSheet('temp')">   <span class="tile-icon">🌡️</span><span class="tile-label">Temp</span></div>
+        <div class="log-tile" style="--tile-color:var(--meds-glow)"   onclick="openSheet('meds')">   <span class="tile-icon">💊</span><span class="tile-label">Meds</span></div>
+        <div class="log-tile" style="--tile-color:var(--journal-glow)"onclick="openSheet('journal')"><span class="tile-icon">📓</span><span class="tile-label">Journal</span></div>
+        <div class="log-tile" style="--tile-color:var(--noise-glow)"  onclick="toggleWhiteNoise()">  <span class="tile-icon">🌊</span><span class="tile-label">White Noise</span></div>
+      </div>
+
+      <!-- Today -->
+      <div class="section-header">Today</div>
+      <div class="stats-row">
+        <div class="stat-pill"><div class="stat-val" id="statFeeds">3</div><div class="stat-lbl">Feeds</div></div>
+        <div class="stat-pill"><div class="stat-val" id="statSleep">5.2h</div><div class="stat-lbl">Sleep</div></div>
+        <div class="stat-pill"><div class="stat-val" id="statDiapers">4</div><div class="stat-lbl">Diapers</div></div>
+      </div>
+
+      <!-- Recent -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="section-header" style="margin-bottom:0">Recent</div>
+        <span style="color:var(--aurora);font-size:13px;font-weight:500;cursor:pointer" onclick="goTab('timeline')">See all</span>
+      </div>
+      <div class="recent-card" id="recentList">
+        <div class="recent-item"><div class="recent-dot" style="background:var(--sleep-glow)"></div><div><div class="recent-type">Sleep</div><div class="recent-detail">1h 12m · Crib</div></div><div class="recent-time">32m ago</div></div>
+        <div class="recent-item"><div class="recent-dot" style="background:var(--feed-glow)"></div><div><div class="recent-type">Bottle</div><div class="recent-detail">140ml</div></div><div class="recent-time">2h ago</div></div>
+        <div class="recent-item"><div class="recent-dot" style="background:var(--diaper-glow)"></div><div><div class="recent-type">Diaper</div><div class="recent-detail">Wet</div></div><div class="recent-time">2h ago</div></div>
+        <div class="recent-item"><div class="recent-dot" style="background:var(--feed-glow)"></div><div><div class="recent-type">Breastfeed</div><div class="recent-detail">Left side</div></div><div class="recent-time">4h ago</div></div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div><!-- end scroll-content -->
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <div class="tab-item active" id="tab-home" onclick="goTab('home')">
+        <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
+      </div>
+      <div class="tab-item" id="tab-timeline" onclick="goTab('timeline')">
+        <span class="tab-icon">📋</span><span class="tab-label">Timeline</span>
+      </div>
+      <div class="tab-item" id="tab-insights" onclick="goTab('insights')">
+        <span class="tab-icon">📊</span><span class="tab-label">Insights</span>
+      </div>
+      <div class="tab-item" id="tab-baby" onclick="goTab('baby')">
+        <span class="tab-icon">👶</span><span class="tab-label">Baby</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: TIMELINE ══════════════ -->
+  <div class="screen" id="timeline">
+    <div class="stars" id="starsTL"></div>
+    <div style="padding:52px 20px 8px;position:relative;z-index:1;flex-shrink:0">
+      <p class="playfair text-moonrise" style="font-size:26px;margin-bottom:14px">Timeline</p>
+      <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px">
+        <div class="pill active" style="flex-shrink:0;border-color:var(--aurora);background:var(--aurora);color:var(--midnight)">All</div>
+        <div class="pill" style="flex-shrink:0">Sleep</div>
+        <div class="pill" style="flex-shrink:0">Feed</div>
+        <div class="pill" style="flex-shrink:0">Diaper</div>
+        <div class="pill" style="flex-shrink:0">Pump</div>
+      </div>
+    </div>
+    <div class="timeline-list">
+      <div class="day-divider"><div class="day-line"></div><div class="day-label">Today</div><div class="day-line"></div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--sleep-glow);box-shadow:0 0 6px var(--sleep-glow)"></div><div class="tl-main"><div class="tl-type">Sleep</div><div class="tl-detail">1h 12m · Crib</div></div><div class="tl-time">10:20 AM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--feed-glow);box-shadow:0 0 6px var(--feed-glow)"></div><div class="tl-main"><div class="tl-type">Bottle</div><div class="tl-detail">140ml</div></div><div class="tl-time">8:45 AM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--diaper-glow);box-shadow:0 0 6px var(--diaper-glow)"></div><div class="tl-main"><div class="tl-type">Diaper</div><div class="tl-detail">Wet</div></div><div class="tl-time">8:30 AM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--feed-glow);box-shadow:0 0 6px var(--feed-glow)"></div><div class="tl-main"><div class="tl-type">Breastfeed</div><div class="tl-detail">Left side · 18m</div></div><div class="tl-time">6:20 AM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--sleep-glow);box-shadow:0 0 6px var(--sleep-glow)"></div><div class="tl-main"><div class="tl-type">Sleep</div><div class="tl-detail">3h 42m · Crib</div></div><div class="tl-time">2:30 AM</div></div>
+      <div class="day-divider"><div class="day-line"></div><div class="day-label">Yesterday</div><div class="day-line"></div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--pump-glow);box-shadow:0 0 6px var(--pump-glow)"></div><div class="tl-main"><div class="tl-type">Pump</div><div class="tl-detail">L: 80ml · R: 95ml</div></div><div class="tl-time">10:00 PM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--sleep-glow);box-shadow:0 0 6px var(--sleep-glow)"></div><div class="tl-main"><div class="tl-type">Sleep</div><div class="tl-detail">48m · Arms</div></div><div class="tl-time">4:30 PM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--diaper-glow);box-shadow:0 0 6px var(--diaper-glow)"></div><div class="tl-main"><div class="tl-type">Diaper</div><div class="tl-detail">Both</div></div><div class="tl-time">3:15 PM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--feed-glow);box-shadow:0 0 6px var(--feed-glow)"></div><div class="tl-main"><div class="tl-type">Bottle</div><div class="tl-detail">120ml</div></div><div class="tl-time">2:00 PM</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--aurora);box-shadow:0 0 6px var(--aurora)"></div><div class="tl-main"><div class="tl-type">Milestone</div><div class="tl-detail">Said "mama" for the first time!</div></div><div class="tl-time">11:30 AM</div></div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-item" id="ttab-home" onclick="goTab('home')"><span class="tab-icon">🏠</span><span class="tab-label">Home</span></div>
+      <div class="tab-item active" id="ttab-timeline" onclick="goTab('timeline')"><span class="tab-icon">📋</span><span class="tab-label">Timeline</span></div>
+      <div class="tab-item" id="ttab-insights" onclick="goTab('insights')"><span class="tab-icon">📊</span><span class="tab-label">Insights</span></div>
+      <div class="tab-item" id="ttab-baby" onclick="goTab('baby')"><span class="tab-icon">👶</span><span class="tab-label">Baby</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: INSIGHTS ══════════════ -->
+  <div class="screen" id="insights">
+    <div class="stars" id="starsIns"></div>
+    <div style="padding:52px 20px 8px;position:relative;z-index:1;flex-shrink:0">
+      <p class="playfair text-moonrise" style="font-size:26px;margin-bottom:4px">Insights</p>
+    </div>
+    <div class="insights-list">
+      <!-- Best night highlight -->
+      <div class="card" style="margin-bottom:16px;border-color:rgba(107,127,212,0.2);box-shadow:0 4px 20px rgba(107,127,212,0.1)">
+        <p style="color:var(--starlight);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Best night this week</p>
+        <p style="color:var(--moonrise);font-size:28px;font-weight:700;margin-bottom:2px">6h 14m</p>
+        <p style="color:var(--starlight);font-size:13px">Thursday, May 8</p>
+      </div>
+
+      <!-- Sleep chart -->
+      <div class="card" style="margin-bottom:16px">
+        <p class="playfair text-moonrise" style="font-size:16px;margin-bottom:16px">Sleep · Last 7 Days</p>
+        <div class="bar-chart" id="sleepBars"></div>
+        <div style="display:flex;gap:12px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:var(--sleep-glow)"></div><span style="color:var(--starlight);font-size:12px">Night</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:2px;background:rgba(107,127,212,0.5)"></div><span style="color:var(--starlight);font-size:12px">Naps</span></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-box"><div class="metric-val">12.4h</div><div class="metric-lbl">Avg / day</div></div>
+          <div class="metric-box"><div class="metric-val">2.1h</div><div class="metric-lbl">Avg naps</div></div>
+          <div class="metric-box"><div class="metric-val">2.4</div><div class="metric-lbl">Nap count</div></div>
+        </div>
+      </div>
+
+      <!-- Feed heatmap placeholder -->
+      <div class="card" style="margin-bottom:16px">
+        <p class="playfair text-moonrise" style="font-size:16px;margin-bottom:14px">Feed Patterns · Last 7 Days</p>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;margin-bottom:4px;margin-left:28px;gap:2px">
+            <span style="flex:1;font-size:9px;color:var(--starlight);text-align:left">12a</span>
+            <span style="flex:1;font-size:9px;color:var(--starlight);text-align:left">6a</span>
+            <span style="flex:1;font-size:9px;color:var(--starlight);text-align:left">12p</span>
+            <span style="flex:1;font-size:9px;color:var(--starlight);text-align:left">6p</span>
+          </div>
+          <div id="heatmap"></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-box"><div class="metric-val">7.3</div><div class="metric-lbl">Feeds / day</div></div>
+          <div class="metric-box"><div class="metric-val">2h 45m</div><div class="metric-lbl">Avg interval</div></div>
+        </div>
+      </div>
+
+      <!-- Milestone -->
+      <div class="card" style="margin-bottom:16px">
+        <p class="playfair text-moonrise" style="font-size:16px;margin-bottom:14px">Milestones</p>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+          <span style="font-size:20px">⭐</span>
+          <div><p style="color:var(--moonrise);font-size:15px;font-weight:500">Said "mama" for the first time!</p><p style="color:var(--starlight);font-size:12px;margin-top:2px">May 14, 2026</p></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:20px">⭐</span>
+          <div><p style="color:var(--moonrise);font-size:15px;font-weight:500">First solid food — avocado</p><p style="color:var(--starlight);font-size:12px;margin-top:2px">May 10, 2026</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-item" onclick="goTab('home')"><span class="tab-icon">🏠</span><span class="tab-label">Home</span></div>
+      <div class="tab-item" onclick="goTab('timeline')"><span class="tab-icon">📋</span><span class="tab-label">Timeline</span></div>
+      <div class="tab-item active" onclick="goTab('insights')"><span class="tab-icon">📊</span><span class="tab-label">Insights</span></div>
+      <div class="tab-item" onclick="goTab('baby')"><span class="tab-icon">👶</span><span class="tab-label">Baby</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN: BABY PROFILE ══════════════ -->
+  <div class="screen" id="baby">
+    <div class="stars" id="starsBaby"></div>
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none;position:relative;z-index:1">
+      <div style="padding:52px 20px 0">
+        <p class="playfair text-moonrise" style="font-size:26px;margin-bottom:20px">Profile</p>
+      </div>
+      <div style="padding:0 20px 100px;display:flex;flex-direction:column;gap:14px">
+        <!-- Baby card -->
+        <div class="card" style="align-items:center;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 24px rgba(200,169,126,0.15)">
+          <div style="width:88px;height:88px;border-radius:44px;background:rgba(200,169,126,0.2);border:2px solid var(--aurora);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative">
+            👶
+            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:var(--aurora);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px">✏️</div>
+          </div>
+          <p class="playfair text-moonrise" style="font-size:24px" id="profileName">Amira</p>
+          <div style="display:flex;gap:16px;align-items:center">
+            <div style="text-align:center"><p style="color:var(--aurora);font-size:16px;font-weight:700">7mo 2wk</p><p style="color:var(--starlight);font-size:11px">Age</p></div>
+            <div style="width:1px;height:32px;background:var(--border)"></div>
+            <div style="text-align:center"><p style="color:var(--aurora);font-size:16px;font-weight:700">Oct 3, 2025</p><p style="color:var(--starlight);font-size:11px">Birthday</p></div>
+          </div>
+        </div>
+        <!-- Caregivers -->
+        <div class="card">
+          <p class="playfair text-moonrise" style="font-size:16px;margin-bottom:14px">Caregivers</p>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="width:36px;height:36px;border-radius:18px;background:rgba(200,169,126,0.2);border:1.5px solid var(--aurora);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--aurora)" id="profileAvatar">S</div>
+            <div style="flex:1"><p style="color:var(--moonrise);font-size:15px;font-weight:500" id="profileCg">Sara</p><p style="color:var(--starlight);font-size:12px">parent</p></div>
+            <div style="background:rgba(200,169,126,0.15);border-radius:99px;padding:3px 10px"><span style="color:var(--aurora);font-size:11px;font-weight:500">You</span></div>
+          </div>
+          <button class="btn-ghost" style="margin-top:8px;height:44px;font-size:14px">Invite caregiver</button>
+        </div>
+        <!-- Settings -->
+        <div class="card">
+          <p class="playfair text-moonrise" style="font-size:16px;margin-bottom:12px">Settings</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)">
+            <span style="color:var(--moonrise);font-size:15px">24-hour time</span>
+            <div onclick="toggleSwitch(this)" style="width:48px;height:28px;border-radius:14px;background:var(--twilight);position:relative;cursor:pointer;transition:background 0.2s">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--moonrise);position:absolute;top:3px;left:3px;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0">
+            <span style="color:var(--moonrise);font-size:15px">Use oz instead of ml</span>
+            <div onclick="toggleSwitch(this)" style="width:48px;height:28px;border-radius:14px;background:var(--twilight);position:relative;cursor:pointer;transition:background 0.2s">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--moonrise);position:absolute;top:3px;left:3px;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ghost" style="height:48px">Export data (PDF)</button>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab-item" onclick="goTab('home')"><span class="tab-icon">🏠</span><span class="tab-label">Home</span></div>
+      <div class="tab-item" onclick="goTab('timeline')"><span class="tab-icon">📋</span><span class="tab-label">Timeline</span></div>
+      <div class="tab-item" onclick="goTab('insights')"><span class="tab-icon">📊</span><span class="tab-label">Insights</span></div>
+      <div class="tab-item active" onclick="goTab('baby')"><span class="tab-icon">👶</span><span class="tab-label">Baby</span></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       BOTTOM SHEETS (shared overlay)
+  ════════════════════════════════════════ -->
+  <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+
+  <!-- DIAPER SHEET -->
+  <div class="sheet" id="sheetDiaper" style="max-height:55%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Diaper</div>
+      <p style="color:var(--starlight);font-size:13px;text-align:center;margin-bottom:24px;margin-top:-12px">Tap to log instantly</p>
+      <div class="diaper-grid">
+        <div class="diaper-option" onclick="logDiaper('Wet')"><span>💧</span><span>Wet</span></div>
+        <div class="diaper-option" onclick="logDiaper('Dirty')"><span>💩</span><span>Dirty</span></div>
+        <div class="diaper-option" onclick="logDiaper('Both')"><span>💧💩</span><span>Both</span></div>
+        <div class="diaper-option" onclick="logDiaper('Dry')"><span>✨</span><span>Dry</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLEEP SHEET -->
+  <div class="sheet" id="sheetSleep" style="max-height:78%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Sleep</div>
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="switchSleepTab('quick', this)">Quick Log</button>
+        <button class="tab-btn" onclick="switchSleepTab('timer', this)">Timer</button>
+      </div>
+      <div id="sleepTabQuick">
+        <span class="field-label">When did they fall asleep?</span>
+        <div class="time-display" id="sleepStartDisplay" onclick="nudgeTime('sleepStartDisplay')">10:20 PM</div>
+        <span class="field-label">When did they wake up?</span>
+        <div class="time-display" id="sleepEndDisplay" onclick="nudgeTime('sleepEndDisplay')">11:52 PM</div>
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="color:var(--aurora);font-size:28px;font-weight:700">1h 32m</span>
+        </div>
+        <span class="field-label">Where? (optional)</span>
+        <div class="pill-row">
+          <div class="pill" onclick="togglePill(this)">Crib</div>
+          <div class="pill" onclick="togglePill(this)">Bassinet</div>
+          <div class="pill" onclick="togglePill(this)">Arms</div>
+          <div class="pill" onclick="togglePill(this)">Carrier</div>
+          <div class="pill" onclick="togglePill(this)">Car</div>
+        </div>
+        <button class="btn-primary" onclick="logSleep()">Log Sleep</button>
+      </div>
+      <div id="sleepTabTimer" style="display:none;text-align:center;padding:16px 0">
+        <p style="color:var(--starlight);font-size:14px;margin-bottom:24px">Tap when baby falls asleep — we'll track duration automatically</p>
+        <div style="font-size:56px;font-weight:700;color:var(--sleep-glow);font-variant-numeric:tabular-nums;margin-bottom:24px" id="timerDisplay">00:00</div>
+        <button class="btn-primary" id="timerBtn" onclick="toggleTimer()">Started sleeping 💤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEED SHEET -->
+  <div class="sheet" id="sheetFeed" style="max-height:75%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Feed</div>
+      <div class="tabs-row">
+        <button class="tab-btn" id="feedTabBreast" onclick="switchFeedTab('breast')">Breast</button>
+        <button class="tab-btn active" id="feedTabBottle" onclick="switchFeedTab('bottle')">Bottle</button>
+        <button class="tab-btn" id="feedTabSolid" onclick="switchFeedTab('solid')">Solids</button>
+      </div>
+      <!-- Breast -->
+      <div id="feedBreast" style="display:none">
+        <span class="field-label">Which side?</span>
+        <div class="side-row">
+          <button class="side-btn active" onclick="selectSide(this,'L')"><span class="side-big">L</span><span>Left</span></button>
+          <button class="side-btn" onclick="selectSide(this,'R')"><span class="side-big">R</span><span>Right</span></button>
+          <button class="side-btn" onclick="selectSide(this,'B')"><span class="side-big">B</span><span>Both</span></button>
+        </div>
+        <button class="btn-primary" onclick="logFeed('Breast')">Log Feed</button>
+      </div>
+      <!-- Bottle -->
+      <div id="feedBottle">
+        <span class="field-label">How much?</span>
+        <div class="vol-row">
+          <button class="vol-btn" onclick="adjustVol(-1)">−</button>
+          <div><span class="vol-number" id="volDisplay">120</span><div class="vol-unit">ml</div></div>
+          <button class="vol-btn" onclick="adjustVol(1)">+</button>
+        </div>
+        <div style="display:flex;background:var(--twilight);border-radius:99px;padding:3px;width:120px;margin:0 auto 20px">
+          <button onclick="setUnit('ml',this)" style="flex:1;padding:6px;border-radius:99px;border:none;background:var(--dusk);color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer" id="unitMl">ml</button>
+          <button onclick="setUnit('oz',this)" style="flex:1;padding:6px;border-radius:99px;border:none;background:transparent;color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer" id="unitOz">oz</button>
+        </div>
+        <button class="btn-primary" onclick="logFeed('Bottle')">Log Feed</button>
+      </div>
+      <!-- Solids -->
+      <div id="feedSolid" style="display:none">
+        <span class="field-label">What foods?</span>
+        <div class="pill-row" style="margin-bottom:16px">
+          <div class="pill" onclick="togglePill(this)">Puree</div>
+          <div class="pill" onclick="togglePill(this)">Oatmeal</div>
+          <div class="pill" onclick="togglePill(this)">Banana</div>
+          <div class="pill" onclick="togglePill(this)">Avocado</div>
+          <div class="pill" onclick="togglePill(this)">Sweet Potato</div>
+          <div class="pill" onclick="togglePill(this)">Apple</div>
+          <div class="pill" onclick="togglePill(this)">Carrot</div>
+        </div>
+        <button class="btn-primary" onclick="logFeed('Solids')">Log Feed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NURSE SHEET -->
+  <div class="sheet" id="sheetNurse" style="max-height:55%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Breastfeed</div>
+      <span class="field-label">Which side?</span>
+      <div class="side-row">
+        <button class="side-btn active" onclick="selectSide(this,'L')"><span class="side-big">L</span><span>Left</span></button>
+        <button class="side-btn" onclick="selectSide(this,'R')"><span class="side-big">R</span><span>Right</span></button>
+        <button class="side-btn" onclick="selectSide(this,'B')"><span class="side-big">B</span><span>Both</span></button>
+      </div>
+      <button class="btn-primary" style="margin-top:12px" onclick="logFeed('Breastfeed')">Log Feed</button>
+    </div>
+  </div>
+
+  <!-- PUMP SHEET -->
+  <div class="sheet" id="sheetPump" style="max-height:65%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Pump</div>
+      <div style="display:flex;gap:20px;margin-bottom:20px">
+        <div style="flex:1;text-align:center">
+          <p class="field-label" style="margin-bottom:12px">Left</p>
+          <button onclick="adjustPump('L',10)" style="width:40px;height:40px;border-radius:20px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:20px;cursor:pointer;margin-bottom:6px">+</button>
+          <div style="font-size:38px;font-weight:700;color:var(--moonrise);font-variant-numeric:tabular-nums" id="pumpL">0</div>
+          <p style="color:var(--starlight);font-size:12px;margin-bottom:6px">ml</p>
+          <button onclick="adjustPump('L',-10)" style="width:40px;height:40px;border-radius:20px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:20px;cursor:pointer">−</button>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="flex:1;text-align:center">
+          <p class="field-label" style="margin-bottom:12px">Right</p>
+          <button onclick="adjustPump('R',10)" style="width:40px;height:40px;border-radius:20px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:20px;cursor:pointer;margin-bottom:6px">+</button>
+          <div style="font-size:38px;font-weight:700;color:var(--moonrise);font-variant-numeric:tabular-nums" id="pumpR">0</div>
+          <p style="color:var(--starlight);font-size:12px;margin-bottom:6px">ml</p>
+          <button onclick="adjustPump('R',-10)" style="width:40px;height:40px;border-radius:20px;background:var(--twilight);border:1px solid var(--border);color:var(--moonrise);font-size:20px;cursor:pointer">−</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <p style="color:var(--starlight);font-size:13px">Total</p>
+        <p style="color:var(--pump-glow);font-size:32px;font-weight:700;font-variant-numeric:tabular-nums" id="pumpTotal">0ml</p>
+      </div>
+      <button class="btn-primary" onclick="logPump()">Log Pump</button>
+    </div>
+  </div>
+
+  <!-- TEMPERATURE SHEET -->
+  <div class="sheet" id="sheetTemp" style="max-height:80%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Log Temperature</div>
+      <div class="temp-display-wrap">
+        <div class="temp-ring" id="tempRing">
+          <div class="temp-number" id="tempNumber">36.8</div>
+          <div class="temp-unit" id="tempUnitDisp">°C</div>
+        </div>
+        <div class="temp-status" id="tempStatus">Normal</div>
+      </div>
+      <div class="temp-unit-toggle">
+        <button class="temp-unit-btn active" id="tempBtnC" onclick="setTempUnit('C')">°C</button>
+        <button class="temp-unit-btn" id="tempBtnF" onclick="setTempUnit('F')">°F</button>
+      </div>
+      <div class="temp-adj-row">
+        <button class="temp-adj" onclick="adjustTemp(-0.1)">−</button>
+        <div style="width:60px"></div>
+        <button class="temp-adj" onclick="adjustTemp(0.1)">+</button>
+      </div>
+      <span class="field-label">Method</span>
+      <div class="pill-row" style="margin-bottom:20px">
+        <div class="pill active" onclick="selectTempMethod(this)" style="background:rgba(232,144,74,0.2);border-color:var(--temp-glow);color:var(--temp-glow)">Forehead</div>
+        <div class="pill" onclick="selectTempMethod(this)">Ear</div>
+        <div class="pill" onclick="selectTempMethod(this)">Armpit</div>
+        <div class="pill" onclick="selectTempMethod(this)">Rectal</div>
+      </div>
+      <button class="btn-primary" onclick="logTemp()">Log Temperature</button>
+    </div>
+  </div>
+
+  <!-- MEDS SHEET -->
+  <div class="sheet" id="sheetMeds" style="max-height:80%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Medications</div>
+      <div id="medsList">
+        <div class="med-item" onclick="instantLogMed('Vitamin D','400 IU')">
+          <div class="med-dot">💊</div>
+          <div><div class="med-name">Vitamin D</div><div class="med-dose">400 IU drops</div></div>
+          <button class="med-log-btn">Log</button>
+        </div>
+        <div class="med-item" onclick="instantLogMed('Tylenol','5ml')">
+          <div class="med-dot">🌡️</div>
+          <div><div class="med-name">Tylenol</div><div class="med-dose">5ml · as needed</div></div>
+          <button class="med-log-btn">Log</button>
+        </div>
+      </div>
+      <button onclick="toggleAddMedForm()" style="width:100%;height:44px;border-radius:22px;border:1.5px dashed var(--border);background:transparent;color:var(--starlight);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:12px" id="addMedToggleBtn">+ Add medication</button>
+      <div class="add-med-form" id="addMedForm">
+        <input class="med-input" id="newMedName" placeholder="Medication name" />
+        <div style="display:flex;gap:8px">
+          <input class="med-input" id="newMedDose" placeholder="Dose (e.g. 5ml)" style="flex:1;margin-bottom:0" />
+          <select id="newMedUnit" style="background:var(--twilight);border:1px solid var(--border);border-radius:8px;color:var(--moonrise);font-family:'DM Sans',sans-serif;font-size:13px;padding:0 8px;outline:none;cursor:pointer">
+            <option>ml</option><option>mg</option><option>IU</option><option>drops</option><option>tablet</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="margin-top:14px;height:48px" onclick="saveNewMed()">Save medication</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOURNAL SHEET -->
+  <div class="sheet" id="sheetJournal" style="max-height:85%">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content">
+      <div class="sheet-title">Journal</div>
+      <span class="field-label">Type</span>
+      <div class="journal-type-row">
+        <div class="journal-chip active" onclick="selectJournalType(this,'note')"     id="jt-note">📝 General Note</div>
+        <div class="journal-chip" onclick="selectJournalType(this,'milestone')" id="jt-milestone">⭐ Milestone</div>
+        <div class="journal-chip" onclick="selectJournalType(this,'concern')"   id="jt-concern">⚠️ Concern</div>
+        <div class="journal-chip" onclick="selectJournalType(this,'doctor')"    id="jt-doctor">🩺 Doctor Visit</div>
+        <div class="journal-chip" onclick="selectJournalType(this,'reaction')"  id="jt-reaction">🍽️ Reaction</div>
+      </div>
+      <div class="milestone-chips" id="milestoneChips">
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">First smile</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">Rolled over</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">First word</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">Sat up</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">First tooth</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">First steps</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">First solid food</div>
+        <div class="milestone-chip" onclick="this.classList.toggle('active')">Said mama/dada</div>
+      </div>
+      <span class="field-label">Note</span>
+      <textarea class="journal-textarea" id="journalText" placeholder="Write something…"></textarea>
+      <button class="btn-primary" onclick="logJournal()">Save Entry</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+</div><!-- end phone -->
+
+<script>
+// ════════════════════════════════════
+// State
+// ════════════════════════════════════
+let currentScreen = 'welcome';
+let currentSheet  = null;
+let sleepTimerInterval = null;
+let sleepTimerSeconds  = 0;
+let sleepTimerRunning  = false;
+let sleepActive        = true;
+let sleepStartTime     = new Date(Date.now() - 72 * 60 * 1000);
+let pumpL = 0, pumpR = 0;
+let volMl = 120;
+let unit  = 'ml';
+let feedCount = 3, diaperCount = 4;
+
+// Premature birth state
+let prematureBirth = 'term'; // 'term','early','unknown'
+let weeksEarly = 4;
+let premMode = 'weeks'; // 'weeks','duedate'
+
+// Temperature state
+let tempCelsius = 36.8;
+let tempUnit = 'C';
+let tempMethod = 'Forehead';
+
+// White noise state
+let audioCtx = null;
+let noiseSource = null;
+let noiseFilter = null;
+let noiseGain = null;
+let noiseType = 'rain';
+let noiseInterval = null;
+let noiseSeconds = 0;
+
+// Meds state
+let savedMeds = [
+  { name:'Vitamin D', dose:'400 IU' },
+  { name:'Tylenol',   dose:'5ml' }
+];
+
+// Journal state
+let journalType = 'note';
+
+// Day/night window state
+let dayStart = 6, dayEnd = 20;
+
+// ════════════════════════════════════
+// Stars
+// ════════════════════════════════════
+function buildStars(containerId, count = 200) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      --max-op:${Math.random()*0.5+0.1};
+      --dur:${Math.random()*6+4}s;
+      --delay:${Math.random()*8}s;
+    `;
+    el.appendChild(s);
+  }
+}
+
+// Build stars for all screens lazily
+const STAR_IDS = ['starsWelcome','starsO1','starsO2','starsO3m','starsO3','starsO4','starsOW',
+                  'starsHome','starsTL','starsIns','starsBaby'];
+STAR_IDS.forEach(id => buildStars(id, 180));
+
+// ════════════════════════════════════
+// Navigation
+// ════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+}
+
+function goTab(tab) {
+  closeSheet();
+  goTo(tab);
+}
+
+function goOnboard2() {
+  const bn = document.getElementById('babyNameInput').value.trim() || 'your little one';
+  const cn = document.getElementById('caregiverNameInput').value.trim() || 'you';
+  document.getElementById('babyNameQ').textContent = bn;
+  document.getElementById('babyNamePrem').textContent = bn;
+
+  // Greeting update
+  document.getElementById('greetingName').textContent = `Good evening, ${cn}`;
+  document.getElementById('avatarInitial').textContent = cn[0].toUpperCase();
+  document.getElementById('profileName').textContent = bn;
+  document.getElementById('profileAvatar').textContent = cn[0].toUpperCase();
+  document.getElementById('profileCg').textContent = cn;
+
+  // Set default DOB (3 months ago)
+  const d = new Date(); d.setMonth(d.getMonth() - 3);
+  const dobEl = document.getElementById('dobInput');
+  dobEl.value = d.toISOString().split('T')[0];
+  updateAgeLabel();
+  dobEl.addEventListener('change', updateAgeLabel);
+
+  goTo('onboard2');
+}
+
+function formatAgeFromWeeks(weeks) {
+  const months = Math.floor(weeks / 4.33);
+  const remW = Math.floor(weeks - months * 4.33);
+  if (weeks < 0) return '0 weeks old';
+  if (months === 0) return `${weeks} week${weeks !== 1 ? 's' : ''} old`;
+  if (remW === 0) return `${months} month${months !== 1 ? 's' : ''} old`;
+  return `${months}mo ${remW}wk old`;
+}
+
+function updateAgeLabel() {
+  const val = document.getElementById('dobInput').value;
+  if (!val) return;
+  const dob = new Date(val);
+  const actualWeeks = Math.floor((Date.now() - dob.getTime()) / (7*24*60*60*1000));
+  const bn = document.getElementById('babyNameQ').textContent;
+
+  let mainLabel, correctedLabel = '';
+  if (prematureBirth === 'early') {
+    let adjustment = weeksEarly;
+    if (premMode === 'duedate') {
+      const ddVal = document.getElementById('dueDateInput').value;
+      if (ddVal) {
+        const dd = new Date(ddVal);
+        adjustment = Math.max(0, Math.floor((dd.getTime() - dob.getTime()) / (7*24*60*60*1000)) - 40);
+      }
+    }
+    const corrected = Math.max(0, actualWeeks - adjustment);
+    mainLabel = formatAgeFromWeeks(actualWeeks);
+    correctedLabel = `Corrected age: ${formatAgeFromWeeks(corrected)}`;
+    document.getElementById('ageLabel').textContent = `${bn} is ${mainLabel}`;
+    document.getElementById('correctedAgeLabel').textContent = correctedLabel;
+    document.getElementById('greetingSub').textContent = `${bn} · ${formatAgeFromWeeks(corrected)} (corrected)`;
+  } else {
+    mainLabel = formatAgeFromWeeks(actualWeeks);
+    document.getElementById('ageLabel').textContent = `${bn} is ${mainLabel}`;
+    document.getElementById('correctedAgeLabel').textContent = '';
+    document.getElementById('greetingSub').textContent = `${bn} · ${mainLabel}`;
+  }
+}
+
+// Premature birth
+function selectPremature(val) {
+  prematureBirth = val;
+  document.querySelectorAll('.premature-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('premCard-' + val).classList.add('active');
+  document.getElementById('prematureExtra').style.display = val === 'early' ? 'block' : 'none';
+  updateAgeLabel();
+}
+
+function setPremMode(mode, btn) {
+  premMode = mode;
+  document.getElementById('premWeeksWrap').style.display   = mode === 'weeks'   ? 'flex' : 'none';
+  document.getElementById('premDueDateWrap').style.display = mode === 'duedate' ? 'block' : 'none';
+  document.getElementById('premModeWeeks').style.background = mode === 'weeks'   ? 'var(--dusk)' : 'transparent';
+  document.getElementById('premModeDue').style.background   = mode === 'duedate' ? 'var(--dusk)' : 'transparent';
+  document.getElementById('premModeWeeks').style.color = mode === 'weeks'   ? 'var(--moonrise)' : 'var(--starlight)';
+  document.getElementById('premModeDue').style.color   = mode === 'duedate' ? 'var(--moonrise)' : 'var(--starlight)';
+  updateAgeLabel();
+}
+
+function adjWeeksEarly(d) {
+  weeksEarly = Math.max(1, Math.min(16, weeksEarly + d));
+  document.getElementById('weeksEarlyNum').textContent = weeksEarly;
+  updateAgeLabel();
+}
+
+function finishOnboarding() {
+  const bn = document.getElementById('babyNameInput').value.trim() || 'dreamer';
+  document.getElementById('welcomeBabyName').textContent = bn;
+  goTo('onboard-welcome');
+}
+
+function goToHome() {
+  goTo('home');
+  if (sleepActive) startHomeTimer();
+}
+
+// ════════════════════════════════════
+// Sleep option pickers
+// ════════════════════════════════════
+function selectSleep(el) {
+  document.querySelectorAll('.sleep-opt').forEach(o => {
+    o.style.background = 'var(--twilight)';
+    o.style.borderColor = 'var(--border)';
+  });
+  el.style.background = 'rgba(107,127,212,0.12)';
+  el.style.borderColor = 'var(--sleep-glow)';
+}
+
+function selectNap(btn) {
+  document.querySelectorAll('.nap-btn').forEach(b => {
+    b.style.background = 'var(--twilight)';
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--starlight)';
+  });
+  btn.style.background = 'rgba(200,169,126,0.15)';
+  btn.style.borderColor = 'var(--aurora)';
+  btn.style.color = 'var(--aurora)';
+}
+
+// ════════════════════════════════════
+// Home sleep timer
+// ════════════════════════════════════
+function startHomeTimer() {
+  clearInterval(sleepTimerInterval);
+  sleepTimerInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - sleepStartTime.getTime()) / 1000);
+    const h = Math.floor(secs/3600);
+    const m = Math.floor((secs%3600)/60);
+    const s = secs%60;
+    document.getElementById('sleepTimer').textContent =
+      `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+}
+
+function endSleep() {
+  clearInterval(sleepTimerInterval);
+  sleepActive = false;
+  document.getElementById('sleepBadgeText').textContent = 'Awake';
+  document.getElementById('sleepBadgeText').style.color = 'var(--feed-glow)';
+  document.querySelector('.sleep-glow-bg').style.background = 'var(--feed-glow)';
+  document.getElementById('sleepTimer').textContent = '0m';
+  document.getElementById('sleepSub').textContent = 'Woke up just now';
+  document.getElementById('sleepEndBtn').style.display = 'none';
+  document.getElementById('sleepTimer').style.fontSize = '28px';
+  showToast('Sleep ended · 1h 12m logged ✓');
+}
+
+// ════════════════════════════════════
+// Sheets
+// ════════════════════════════════════
+function openSheet(type) {
+  const map = {
+    sleep:'sheetSleep', feed:'sheetFeed', diaper:'sheetDiaper',
+    nurse:'sheetNurse', pump:'sheetPump',
+    temp:'sheetTemp', meds:'sheetMeds', journal:'sheetJournal'
+  };
+  const id = map[type];
+  if (!id) return;
+  closeSheet(false);
+  currentSheet = id;
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.getElementById(id).classList.add('open');
+}
+
+// ════════════════════════════════════
+// Day/Night windows
+// ════════════════════════════════════
+function formatHour(h) {
+  if (h === 0)  return '12:00 AM';
+  if (h === 12) return '12:00 PM';
+  return h < 12 ? `${h}:00 AM` : `${h-12}:00 PM`;
+}
+
+function updateWindows() {
+  dayStart = parseInt(document.getElementById('dayRangeStart').value);
+  dayEnd   = parseInt(document.getElementById('dayRangeEnd').value);
+  if (dayEnd <= dayStart) { dayEnd = dayStart + 1; document.getElementById('dayRangeEnd').value = dayEnd; }
+
+  const total = 24;
+  const n1 = (dayStart / total * 100).toFixed(1) + '%';
+  const dd = ((dayEnd - dayStart) / total * 100).toFixed(1) + '%';
+  const n2 = ((total - dayEnd) / total * 100).toFixed(1) + '%';
+  document.getElementById('wSegNight1').style.width = n1;
+  document.getElementById('wSegDay').style.width    = dd;
+  document.getElementById('wSegNight2').style.width = n2;
+
+  document.getElementById('dayStartLabel').textContent = formatHour(dayStart);
+  document.getElementById('dayEndLabel').textContent   = formatHour(dayEnd);
+  document.getElementById('daySummary').textContent  = `${formatHour(dayStart)} – ${formatHour(dayEnd)}`;
+  document.getElementById('nightSummary').textContent = `${formatHour(dayEnd)} – ${formatHour(dayStart)}`;
+
+  // Update slider track fill
+  document.getElementById('dayRangeStart').style.background =
+    `linear-gradient(to right, var(--sleep-glow) 0%, var(--sleep-glow) ${(dayStart/23*100).toFixed(0)}%, var(--twilight) ${(dayStart/23*100).toFixed(0)}%)`;
+  document.getElementById('dayRangeEnd').style.background =
+    `linear-gradient(to right, var(--aurora) 0%, var(--aurora) ${(dayEnd/23*100).toFixed(0)}%, var(--twilight) ${(dayEnd/23*100).toFixed(0)}%)`;
+}
+
+// ════════════════════════════════════
+// White Noise
+// ════════════════════════════════════
+function buildNoiseBuffer(type) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const sr = audioCtx.sampleRate;
+  const buf = audioCtx.createBuffer(1, sr * 3, sr);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.18;
+
+  if (type === 'rain') {
+    const f = audioCtx.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = 800;
+    src.connect(f); f.connect(gain);
+    noiseFilter = f;
+  } else if (type === 'shush') {
+    const f = audioCtx.createBiquadFilter();
+    f.type = 'bandpass'; f.frequency.value = 3500; f.Q.value = 0.7;
+    src.connect(f); f.connect(gain);
+    noiseFilter = f;
+  } else {
+    const f = audioCtx.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = 2000;
+    src.connect(f); f.connect(gain);
+    noiseFilter = f;
+  }
+
+  gain.connect(audioCtx.destination);
+  noiseGain = gain;
+  return src;
+}
+
+function toggleWhiteNoise() {
+  if (noiseSource) { stopWhiteNoise(); return; }
+  startWhiteNoiseType(noiseType);
+}
+
+function startWhiteNoiseType(type) {
+  if (noiseSource) { try { noiseSource.stop(); } catch(e){} noiseSource = null; }
+  noiseType = type;
+  noiseSource = buildNoiseBuffer(type);
+  noiseSource.start();
+
+  noiseSeconds = 0;
+  clearInterval(noiseInterval);
+  noiseInterval = setInterval(() => {
+    noiseSeconds++;
+    const m = Math.floor(noiseSeconds / 60);
+    const s = noiseSeconds % 60;
+    document.getElementById('miniTimer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+
+  const icons = { rain:'🌧', shush:'🤫', fan:'💨' };
+  document.getElementById('miniPlayerIcon').textContent = icons[type] || '🌊';
+  document.querySelectorAll('.mini-type-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('noiseBtn-' + type);
+  if (btn) btn.classList.add('active');
+
+  document.getElementById('miniPlayer').classList.add('show');
+  // Push tab bar down to make room
+  document.querySelectorAll('.tab-bar').forEach(tb => tb.style.marginBottom = '0');
+}
+
+function switchNoise(type) {
+  if (!noiseSource) return;
+  startWhiteNoiseType(type);
+}
+
+function stopWhiteNoise() {
+  if (noiseSource) { try { noiseSource.stop(); } catch(e){} noiseSource = null; }
+  clearInterval(noiseInterval);
+  document.getElementById('miniPlayer').classList.remove('show');
+  showToast('White noise stopped');
+}
+
+// ════════════════════════════════════
+// Temperature
+// ════════════════════════════════════
+function getTempColor(c) {
+  if (c < 37.5) return 'var(--success)';
+  if (c < 38.5) return 'var(--warning)';
+  return 'var(--danger)';
+}
+function getTempBg(c) {
+  if (c < 37.5) return 'rgba(107,212,148,0.08)';
+  if (c < 38.5) return 'rgba(212,196,107,0.08)';
+  return 'rgba(212,107,107,0.08)';
+}
+function getTempStatus(c) {
+  if (c < 37.5) return 'Normal';
+  if (c < 38.5) return 'Mild Fever';
+  return 'High Fever';
+}
+
+function refreshTempDisplay() {
+  const col = getTempColor(tempCelsius);
+  const ring = document.getElementById('tempRing');
+  ring.style.borderColor = col;
+  ring.style.background  = getTempBg(tempCelsius);
+  document.getElementById('tempNumber').style.color = col;
+  document.getElementById('tempStatus').textContent = getTempStatus(tempCelsius);
+  document.getElementById('tempStatus').style.color = col;
+
+  if (tempUnit === 'C') {
+    document.getElementById('tempNumber').textContent = tempCelsius.toFixed(1);
+    document.getElementById('tempUnitDisp').textContent = '°C';
+  } else {
+    const f = (tempCelsius * 9/5 + 32).toFixed(1);
+    document.getElementById('tempNumber').textContent = f;
+    document.getElementById('tempUnitDisp').textContent = '°F';
+  }
+}
+
+function adjustTemp(delta) {
+  tempCelsius = Math.round((tempCelsius + delta) * 10) / 10;
+  tempCelsius = Math.max(35, Math.min(42, tempCelsius));
+  refreshTempDisplay();
+}
+
+function setTempUnit(u) {
+  tempUnit = u;
+  document.getElementById('tempBtnC').classList.toggle('active', u === 'C');
+  document.getElementById('tempBtnF').classList.toggle('active', u === 'F');
+  refreshTempDisplay();
+}
+
+function selectTempMethod(el) {
+  document.querySelectorAll('#sheetTemp .pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.background = ''; p.style.borderColor = ''; p.style.color = '';
+  });
+  el.classList.add('active');
+  el.style.background   = 'rgba(232,144,74,0.2)';
+  el.style.borderColor  = 'var(--temp-glow)';
+  el.style.color        = 'var(--temp-glow)';
+  tempMethod = el.textContent.trim();
+}
+
+function logTemp() {
+  closeSheet();
+  const display = tempUnit === 'C' ? `${tempCelsius.toFixed(1)}°C` : `${(tempCelsius*9/5+32).toFixed(1)}°F`;
+  showToast(`Temp logged · ${display} · ${tempMethod} ✓`);
+}
+
+// ════════════════════════════════════
+// Medications
+// ════════════════════════════════════
+function instantLogMed(name, dose) {
+  closeSheet();
+  showToast(`${name} ${dose} logged ✓`);
+}
+
+function toggleAddMedForm() {
+  const form = document.getElementById('addMedForm');
+  const btn  = document.getElementById('addMedToggleBtn');
+  const open = form.classList.toggle('open');
+  btn.textContent = open ? '✕ Cancel' : '+ Add medication';
+}
+
+function saveNewMed() {
+  const name = document.getElementById('newMedName').value.trim();
+  const dose = document.getElementById('newMedDose').value.trim();
+  const unit = document.getElementById('newMedUnit').value;
+  if (!name) return;
+  const list = document.getElementById('medsList');
+  const item = document.createElement('div');
+  item.className = 'med-item';
+  const fullDose = dose ? `${dose} ${unit}` : '';
+  item.innerHTML = `
+    <div class="med-dot">💊</div>
+    <div><div class="med-name">${name}</div><div class="med-dose">${fullDose}</div></div>
+    <button class="med-log-btn" onclick="instantLogMed('${name}','${fullDose}')">Log</button>
+  `;
+  item.onclick = () => instantLogMed(name, fullDose);
+  list.appendChild(item);
+  document.getElementById('newMedName').value = '';
+  document.getElementById('newMedDose').value = '';
+  toggleAddMedForm();
+  showToast(`${name} saved ✓`);
+}
+
+function addCommonMed(chip, name, dose) {
+  chip.classList.toggle('active');
+  if (chip.classList.contains('active')) {
+    const el = document.getElementById('onboardMedList');
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(126,200,212,0.1);border:1px solid rgba(126,200,212,0.25);border-radius:10px';
+    item.innerHTML = `<span style="font-size:16px">💊</span><span style="color:var(--moonrise);font-size:14px;font-weight:500">${name}</span><span style="color:var(--starlight);font-size:12px">${dose}</span>`;
+    item.id = 'omit-' + name.replace(/\s/g,'');
+    el.appendChild(item);
+  } else {
+    const existing = document.getElementById('omit-' + name.replace(/\s/g,''));
+    if (existing) existing.remove();
+  }
+}
+
+let onboardMedUnit = 'ml';
+
+function selectMedsYesNo(val) {
+  const yes = document.getElementById('medsOptYes');
+  const no  = document.getElementById('medsOptNo');
+  if (val === 'yes') {
+    yes.style.background   = 'rgba(126,200,212,0.12)';
+    yes.style.borderColor  = 'var(--meds-glow)';
+    no.style.background    = 'var(--twilight)';
+    no.style.borderColor   = 'var(--border)';
+    document.getElementById('medsForm').style.display = 'block';
+  } else {
+    no.style.background   = 'rgba(200,169,126,0.12)';
+    no.style.borderColor  = 'var(--aurora)';
+    yes.style.background  = 'var(--twilight)';
+    yes.style.borderColor = 'var(--border)';
+    document.getElementById('medsForm').style.display = 'none';
+    // auto-advance after brief delay
+    setTimeout(() => goTo('onboard3'), 320);
+  }
+}
+
+function setOnboardMedUnit(unit, btn) {
+  onboardMedUnit = unit;
+  document.getElementById('omUnitMl').style.background    = unit === 'ml'    ? 'var(--aurora)' : 'transparent';
+  document.getElementById('omUnitMl').style.color         = unit === 'ml'    ? 'var(--midnight)' : 'var(--starlight)';
+  document.getElementById('omUnitDrops').style.background = unit === 'drops' ? 'var(--aurora)' : 'transparent';
+  document.getElementById('omUnitDrops').style.color      = unit === 'drops' ? 'var(--midnight)' : 'var(--starlight)';
+}
+
+function addOnboardMed() {
+  const name = document.getElementById('onboardMedName').value.trim();
+  const dose = document.getElementById('onboardMedDose').value.trim();
+  const time = document.getElementById('onboardMedTime').value;
+  if (!name) { document.getElementById('onboardMedName').focus(); return; }
+
+  const fullDose = dose ? `${dose} ${onboardMedUnit}` : onboardMedUnit;
+
+  // Save into the shared savedMeds array so the Meds sheet picks it up
+  savedMeds.push({ name, dose: fullDose, reminder: time });
+
+  // Render in the onboarding list
+  const el = document.getElementById('onboardMedList');
+  const id  = 'omitem-' + Date.now();
+  const item = document.createElement('div');
+  item.id = id;
+  item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(126,200,212,0.08);border:1px solid rgba(126,200,212,0.2);border-radius:12px';
+  item.innerHTML = `
+    <span style="font-size:18px">💊</span>
+    <div style="flex:1">
+      <div style="color:var(--moonrise);font-size:14px;font-weight:500">${name}</div>
+      <div style="color:var(--starlight);font-size:12px;margin-top:1px">${fullDose} · ⏰ ${formatReminder(time)}</div>
+    </div>
+    <button onclick="removeOnboardMed('${id}','${name}')" style="background:none;border:none;color:var(--starlight);font-size:18px;cursor:pointer;padding:0 4px;line-height:1">×</button>
+  `;
+  el.appendChild(item);
+
+  // Also add a row to the Meds sheet list
+  const medsList = document.getElementById('medsList');
+  const sheetItem = document.createElement('div');
+  sheetItem.className = 'med-item';
+  sheetItem.innerHTML = `
+    <div class="med-dot">💊</div>
+    <div><div class="med-name">${name}</div><div class="med-dose">${fullDose} · ${formatReminder(time)}</div></div>
+    <button class="med-log-btn" onclick="instantLogMed('${name}','${fullDose}')">Log</button>
+  `;
+  sheetItem.onclick = () => instantLogMed(name, fullDose);
+  medsList.appendChild(sheetItem);
+
+  // Clear inputs
+  document.getElementById('onboardMedName').value = '';
+  document.getElementById('onboardMedDose').value = '';
+  document.getElementById('onboardMedTime').value = '08:00';
+}
+
+function removeOnboardMed(id, name) {
+  document.getElementById(id).remove();
+  const idx = savedMeds.findIndex(m => m.name === name);
+  if (idx > -1) savedMeds.splice(idx, 1);
+}
+
+function formatReminder(time) {
+  if (!time) return '';
+  const [h, m] = time.split(':').map(Number);
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+// ════════════════════════════════════
+// Journal
+// ════════════════════════════════════
+function selectJournalType(el, type) {
+  journalType = type;
+  document.querySelectorAll('.journal-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const ms = document.getElementById('milestoneChips');
+  if (type === 'milestone') ms.classList.add('show'); else ms.classList.remove('show');
+}
+
+function logJournal() {
+  const text = document.getElementById('journalText').value.trim();
+  const typeLabels = { note:'Note', milestone:'Milestone', concern:'Concern', doctor:'Doctor Visit', reaction:'Reaction' };
+  closeSheet();
+  showToast(`${typeLabels[journalType] || 'Entry'} saved ✓`);
+  document.getElementById('journalText').value = '';
+}
+
+function closeSheet(animate = true) {
+  if (!currentSheet) return;
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.getElementById(currentSheet).classList.remove('open');
+  currentSheet = null;
+}
+
+// Diaper
+function logDiaper(type) {
+  closeSheet();
+  diaperCount++;
+  document.getElementById('statDiapers').textContent = diaperCount;
+  addRecentItem('diaper', 'Diaper', type, 'var(--diaper-glow)', 'just now');
+  showToast(`${type} diaper logged ✓`);
+}
+
+// Sleep sheet tabs
+function switchSleepTab(tab, btn) {
+  document.getElementById('sleepTabQuick').style.display = tab === 'quick' ? 'block' : 'none';
+  document.getElementById('sleepTabTimer').style.display = tab === 'timer' ? 'block' : 'none';
+  document.querySelectorAll('#sheetSleep .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function nudgeTime(id) {
+  const times = ['10:15 PM','10:20 PM','10:30 PM','10:45 PM','11:00 PM','11:30 PM','11:52 PM','12:00 AM'];
+  const el = document.getElementById(id);
+  const idx = times.indexOf(el.textContent);
+  el.textContent = times[(idx + 1) % times.length];
+}
+
+function logSleep() {
+  closeSheet();
+  showToast('Sleep logged ✓');
+  addRecentItem('sleep','Sleep','1h 32m · Crib','var(--sleep-glow)','just now');
+}
+
+// Timer
+let timerRunning = false;
+let timerStart   = null;
+let timerTick    = null;
+function toggleTimer() {
+  const btn = document.getElementById('timerBtn');
+  const disp = document.getElementById('timerDisplay');
+  if (!timerRunning) {
+    timerRunning = true;
+    timerStart = Date.now();
+    btn.textContent = 'Baby woke up ☀️';
+    timerTick = setInterval(() => {
+      const s = Math.floor((Date.now()-timerStart)/1000);
+      disp.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+    }, 1000);
+  } else {
+    clearInterval(timerTick);
+    timerRunning = false;
+    closeSheet();
+    showToast('Sleep timer ended ✓');
+  }
+}
+
+// Feed sheet
+function switchFeedTab(tab) {
+  ['breast','bottle','solid'].forEach(t => {
+    document.getElementById('feed'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
+    document.getElementById('feedTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+  });
+}
+
+function selectSide(btn, side) {
+  btn.closest('.side-row').querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function adjustVol(dir) {
+  volMl = Math.max(0, volMl + dir * 10);
+  const display = unit === 'ml' ? volMl : Math.round(volMl / 29.574 * 10) / 10;
+  document.getElementById('volDisplay').textContent = display;
+}
+
+function setUnit(u, btn) {
+  unit = u;
+  document.getElementById('unitMl').style.background = u==='ml'?'var(--dusk)':'transparent';
+  document.getElementById('unitOz').style.background = u==='oz'?'var(--dusk)':'transparent';
+  document.getElementById('unitMl').style.color = u==='ml'?'var(--moonrise)':'var(--starlight)';
+  document.getElementById('unitOz').style.color = u==='oz'?'var(--moonrise)':'var(--starlight)';
+  const display = u === 'ml' ? volMl : Math.round(volMl / 29.574 * 10) / 10;
+  document.getElementById('volDisplay').textContent = display;
+}
+
+function logFeed(type) {
+  closeSheet();
+  feedCount++;
+  document.getElementById('statFeeds').textContent = feedCount;
+  const detail = type === 'Bottle' ? `${volMl}ml` : type === 'Breastfeed' ? 'Left side' : type;
+  addRecentItem('feed', type, detail, 'var(--feed-glow)', 'just now');
+  showToast(`${type} logged ✓`);
+}
+
+// Pump
+function adjustPump(side, delta) {
+  if (side === 'L') { pumpL = Math.max(0, pumpL + delta); document.getElementById('pumpL').textContent = pumpL; }
+  else              { pumpR = Math.max(0, pumpR + delta); document.getElementById('pumpR').textContent = pumpR; }
+  document.getElementById('pumpTotal').textContent = `${pumpL+pumpR}ml`;
+}
+
+function logPump() {
+  closeSheet();
+  showToast(`Pump logged · ${pumpL+pumpR}ml total ✓`);
+  pumpL = pumpR = 0;
+  ['pumpL','pumpR'].forEach(id => document.getElementById(id).textContent = 0);
+  document.getElementById('pumpTotal').textContent = '0ml';
+}
+
+// ════════════════════════════════════
+// Pills
+// ════════════════════════════════════
+function togglePill(el) {
+  el.classList.toggle('active');
+  if (el.classList.contains('active')) {
+    el.style.background = 'rgba(107,127,212,0.2)';
+    el.style.borderColor = 'var(--sleep-glow)';
+    el.style.color = 'var(--sleep-glow)';
+  } else {
+    el.style.background = '';
+    el.style.borderColor = '';
+    el.style.color = '';
+  }
+}
+
+// ════════════════════════════════════
+// Recent items
+// ════════════════════════════════════
+function addRecentItem(type, typeName, detail, color, time) {
+  const list = document.getElementById('recentList');
+  const item = document.createElement('div');
+  item.className = 'recent-item';
+  item.innerHTML = `
+    <div class="recent-dot" style="background:${color}"></div>
+    <div><div class="recent-type">${typeName}</div><div class="recent-detail">${detail}</div></div>
+    <div class="recent-time">${time}</div>
+  `;
+  list.insertBefore(item, list.firstChild);
+  if (list.children.length > 4) list.removeChild(list.lastChild);
+}
+
+// ════════════════════════════════════
+// Toast
+// ════════════════════════════════════
+let toastTimer = null;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════
+// Settings toggle switch
+// ════════════════════════════════════
+function toggleSwitch(el) {
+  const knob = el.querySelector('div');
+  const active = knob.style.transform === 'translateX(20px)';
+  knob.style.transform = active ? '' : 'translateX(20px)';
+  el.style.background = active ? 'var(--twilight)' : 'var(--aurora)';
+}
+
+// ════════════════════════════════════
+// Insights — build bar chart + heatmap
+// ════════════════════════════════════
+function buildCharts() {
+  const data   = [9.2, 11.5, 13.0, 10.8, 14.2, 12.6, 11.9];
+  const labels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const maxH   = Math.max(...data);
+  const bars   = document.getElementById('sleepBars');
+  if (!bars || bars.children.length > 0) return;
+  data.forEach((h, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `
+      <div class="bar-fill" style="height:${(h/maxH)*72}px;opacity:${0.5+i*0.07}"></div>
+      <span class="bar-lbl">${labels[i]}</span>
+    `;
+    bars.appendChild(col);
+  });
+
+  const hm = document.getElementById('heatmap');
+  if (!hm || hm.children.length > 0) return;
+  const feedTimes = [[2,6,9,12,15,18,21],[1,6,9,13,16,19,22],[3,7,10,13,16,20],
+                     [5,8,11,14,17,21],[4,7,10,14,17,20],[2,6,9,12,15,18,22],[0,4,7,10,13,16,20]];
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  feedTimes.forEach((hours, di) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;margin-bottom:3px;gap:2px';
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'width:26px;font-size:9px;color:var(--starlight);flex-shrink:0';
+    lbl.textContent = days[di];
+    row.appendChild(lbl);
+    for (let h = 0; h < 24; h++) {
+      const c = document.createElement('div');
+      const intensity = hours.includes(h) ? (Math.random()*0.5+0.5) : (Math.random()*0.05);
+      c.style.cssText = `flex:1;height:14px;border-radius:2px;background:rgba(212,145,107,${intensity.toFixed(2)})`;
+      row.appendChild(c);
+    }
+    hm.appendChild(row);
+  });
+}
+
+// ════════════════════════════════════
+// Init
+// ════════════════════════════════════
+window.addEventListener('load', () => {
+  startHomeTimer();
+  buildCharts();
+  refreshTempDisplay();
+  updateWindows();
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+});
+</script>
+</body>
+</html>
