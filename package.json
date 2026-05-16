@@ -41,7 +41,9 @@
     "@expo-google-fonts/playfair-display": "^0.2.3",
     "@expo-google-fonts/dm-sans": "^0.2.3",
     "expo-linear-gradient": "~13.0.2",
-    "@react-native-community/datetimepicker": "8.0.1"
+    "@react-native-community/datetimepicker": "8.0.1",
+    "react-native-web": "~0.19.10",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
