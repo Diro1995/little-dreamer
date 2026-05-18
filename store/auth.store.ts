@@ -6,8 +6,10 @@ interface AuthState {
   session: Session | null;
   user: User | null;
   initialized: boolean;
+  emailVerificationPending: boolean;
+  parentName: string;
   initialize: () => void;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -16,6 +18,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
   initialized: false,
+  emailVerificationPending: false,
+  parentName: '',
 
   initialize: () => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,13 +32,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     supabase.auth.onAuthStateChange((_event, session) => {
       set({ session, user: session?.user ?? null });
+      if (session) set({ emailVerificationPending: false });
     });
   },
 
-  signUp: async (email, password) => {
+  signUp: async (email, password, name) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return { error: error.message };
-    if (data.session) set({ session: data.session, user: data.user });
+    const trimmedName = name.trim();
+    if (data.session) {
+      set({ session: data.session, user: data.user, emailVerificationPending: false, parentName: trimmedName });
+    } else if (data.user) {
+      // Email confirmation required — session arrives after user clicks the link
+      set({ emailVerificationPending: true, parentName: trimmedName });
+    }
     return { error: null };
   },
 
@@ -47,6 +58,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
-    set({ session: null, user: null });
+    set({ session: null, user: null, parentName: '' });
   },
 }));

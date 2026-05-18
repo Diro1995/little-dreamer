@@ -10,7 +10,7 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Ellipse, Circle, G } from 'react-native-svg';
+import Svg, { Circle, G, Path } from 'react-native-svg';
 import { Colors } from '@/constants/theme';
 import { StarField } from '@/components/ui/StarField';
 import { Button } from '@/components/ui/Button';
@@ -19,40 +19,29 @@ const { width, height } = Dimensions.get('window');
 
 function FootstepsIcon() {
   const c = Colors.aurora;
+  // Soft teardrop sole path: wider at the ball (top), rounds to a heel (bottom)
+  const sole = 'M0,-14 C-8,-14 -12,-8 -12,0 C-12,8 -8,14 0,16 C8,14 12,8 12,0 C12,-8 8,-14 0,-14 Z';
   return (
-    <View
-      style={{
-        width: 88,
-        height: 88,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: Colors.aurora,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.55,
-        shadowRadius: 22,
-      }}
-    >
-      <Svg width={80} height={80} viewBox="0 0 80 80">
-        {/* Left foot — upper left, angled inward */}
-        <G transform="rotate(-18, 26, 44)">
-          <Ellipse cx={26} cy={44} rx={9} ry={13} fill={c} />
-          <Circle cx={16} cy={26} r={4.5} fill={c} />
-          <Circle cx={22} cy={21} r={4} fill={c} />
-          <Circle cx={29} cy={19} r={3.5} fill={c} />
-          <Circle cx={35} cy={22} r={3} fill={c} />
-          <Circle cx={39} cy={27} r={2.5} fill={c} />
-        </G>
-        {/* Right foot — lower right, angled inward (mirror) */}
-        <G transform="rotate(18, 54, 54)">
-          <Ellipse cx={54} cy={54} rx={9} ry={13} fill={c} />
-          <Circle cx={44} cy={36} r={2.5} fill={c} />
-          <Circle cx={48} cy={31} r={3} fill={c} />
-          <Circle cx={55} cy={29} r={3.5} fill={c} />
-          <Circle cx={62} cy={32} r={4} fill={c} />
-          <Circle cx={66} cy={37} r={4.5} fill={c} />
-        </G>
-      </Svg>
-    </View>
+    <Svg width={80} height={80} viewBox="0 0 80 80">
+      {/* Left foot — upper-left, big toe on the inner (right) side */}
+      <G transform="translate(24,34) rotate(-22)">
+        <Path d={sole} fill={c} />
+        <Circle cx={-11} cy={-17} r={4.0} fill={c} />
+        <Circle cx={-5}  cy={-21} r={3.6} fill={c} />
+        <Circle cx={2}   cy={-22} r={3.2} fill={c} />
+        <Circle cx={8}   cy={-20} r={2.8} fill={c} />
+        <Circle cx={13}  cy={-15} r={2.4} fill={c} />
+      </G>
+      {/* Right foot — lower-right, big toe on the inner (left) side */}
+      <G transform="translate(56,50) rotate(22)">
+        <Path d={sole} fill={c} />
+        <Circle cx={-13} cy={-15} r={2.4} fill={c} />
+        <Circle cx={-8}  cy={-20} r={2.8} fill={c} />
+        <Circle cx={-2}  cy={-22} r={3.2} fill={c} />
+        <Circle cx={5}   cy={-21} r={3.6} fill={c} />
+        <Circle cx={11}  cy={-17} r={4.0} fill={c} />
+      </G>
+    </Svg>
   );
 }
 

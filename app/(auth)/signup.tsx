@@ -15,6 +15,7 @@ export default function SignupScreen() {
   const insets = useSafeAreaInsets();
   const { signUp } = useAuthStore();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,6 +23,7 @@ export default function SignupScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
+    name.trim().length > 0 &&
     email.trim().length > 0 &&
     password.length >= 6 &&
     password === confirmPassword;
@@ -30,7 +32,7 @@ export default function SignupScreen() {
     if (!canSubmit) return;
     setError(null);
     setLoading(true);
-    const { error: err } = await signUp(email.trim().toLowerCase(), password);
+    const { error: err } = await signUp(email.trim().toLowerCase(), password, name.trim());
     setLoading(false);
 
     if (err) {
@@ -98,6 +100,30 @@ export default function SignupScreen() {
             </Text>
           </View>
         )}
+
+        {/* Name */}
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', marginBottom: 6 }}>
+          Your first name
+        </Text>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Sara, James..."
+          placeholderTextColor={`${Colors.starlight}80`}
+          autoCapitalize="words"
+          autoComplete="given-name"
+          style={{
+            color: Colors.moonrise,
+            fontSize: 16,
+            fontFamily: 'DMSans_400Regular',
+            backgroundColor: Colors.cardBg,
+            borderRadius: 14,
+            borderWidth: 1.5,
+            borderColor: Colors.border,
+            padding: 16,
+            marginBottom: 16,
+          }}
+        />
 
         {/* Email */}
         <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', marginBottom: 6 }}>

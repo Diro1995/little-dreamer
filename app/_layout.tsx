@@ -34,7 +34,7 @@ export default function RootLayout() {
     DMSans_700Bold,
   } as Record<string, any>);
 
-  const { loadFromStorage, loadFromSupabase, hasCompletedOnboarding, baby } = useBabyStore();
+  const { loadFromStorage, loadFromSupabase, setBaby, hasCompletedOnboarding, baby } = useBabyStore();
   const { loadFromStorage: loadLogs } = useLogStore();
   const { initialize, session, initialized } = useAuthStore();
 
@@ -50,6 +50,17 @@ export default function RootLayout() {
     });
   }, []);
 
+  // When session arrives (e.g. email confirmed), sync any locally-created baby to Supabase
+  const syncedRef = React.useRef(false);
+  useEffect(() => {
+    if (!session || !baby || syncedRef.current) return;
+    const isLocalId = !baby.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    if (isLocalId) {
+      syncedRef.current = true;
+      setBaby(baby);
+    }
+  }, [session, baby?.id]);
+
   useEffect(() => {
     if (!initialized || !fontsLoaded || !storageLoaded) return;
     SplashScreen.hideAsync();
@@ -58,7 +69,8 @@ export default function RootLayout() {
     const inOnboarding = segments.includes('onboarding');
 
     if (!session) {
-      // Not authenticated — send to welcome unless already there
+      // Allow users who finished onboarding to stay on the app while email confirms
+      if (baby && hasCompletedOnboarding) return;
       if (!inAuth) router.replace('/(auth)/welcome');
       return;
     }

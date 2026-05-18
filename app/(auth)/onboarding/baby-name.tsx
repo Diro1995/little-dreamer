@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { StarField } from '@/components/ui/StarField';
+import { useAuthStore } from '@/store/auth.store';
 
 function StepDots({ current, total }: { current: number; total: number }) {
   return (
@@ -27,6 +28,7 @@ function StepDots({ current, total }: { current: number; total: number }) {
 export default function BabyNameScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { emailVerificationPending, parentName } = useAuthStore();
   const [babyName, setBabyName] = useState('');
 
   const canContinue = babyName.trim().length > 0;
@@ -35,7 +37,7 @@ export default function BabyNameScreen() {
     if (!canContinue) return;
     router.push({
       pathname: '/(auth)/onboarding/baby-birthday',
-      params: { babyName: babyName.trim(), caregiverName: 'Parent' },
+      params: { babyName: babyName.trim(), caregiverName: parentName || 'Parent' },
     });
   };
 
@@ -45,6 +47,34 @@ export default function BabyNameScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StarField />
+
+      {/* Non-blocking email verification banner */}
+      {emailVerificationPending && (
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 4,
+            left: 16,
+            right: 16,
+            zIndex: 10,
+            backgroundColor: `${Colors.aurora}22`,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: `${Colors.aurora}55`,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <Text style={{ fontSize: 14 }}>✉️</Text>
+          <Text style={{ color: Colors.moonrise, fontSize: 13, fontFamily: 'DMSans_400Regular', flex: 1 }}>
+            Check your email to verify your account
+          </Text>
+        </View>
+      )}
+
       <View style={{ flex: 1, paddingHorizontal: 28, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 48 }}>
