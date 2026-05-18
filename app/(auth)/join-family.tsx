@@ -26,7 +26,7 @@ export default function JoinFamilyScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleJoin = async () => {
-    const code = babyCode.trim().toLowerCase();
+    const code = babyCode.trim().toUpperCase();
     if (!code) return;
     setError(null);
     setLoading(true);
@@ -37,16 +37,16 @@ export default function JoinFamilyScreen() {
       return;
     }
 
-    // Verify the baby exists
+    // Look up baby by the short invite code
     const { data: baby, error: fetchErr } = await supabase
       .from('babies')
       .select('id, name')
-      .eq('id', code)
+      .eq('invite_code', code)
       .maybeSingle();
 
     if (fetchErr || !baby) {
       setLoading(false);
-      setError("Baby code not found. Double-check the code and try again.");
+      setError("Invite code not found. Double-check the code and try again.");
       return;
     }
 
@@ -211,28 +211,31 @@ export default function JoinFamilyScreen() {
 
           <TextInput
             value={babyCode}
-            onChangeText={setBabyCode}
-            placeholder="Paste baby code here"
+            onChangeText={(t) => setBabyCode(t.toUpperCase())}
+            placeholder="Invite code (e.g. LUNA42)"
             placeholderTextColor={`${Colors.starlight}80`}
-            autoCapitalize="none"
+            autoCapitalize="characters"
             autoCorrect={false}
+            maxLength={6}
             style={{
               color: Colors.moonrise,
-              fontSize: 14,
-              fontFamily: 'DMSans_400Regular',
+              fontSize: 22,
+              fontFamily: 'DMSans_700Bold',
+              letterSpacing: 8,
               backgroundColor: Colors.twilight,
               borderRadius: 12,
               borderWidth: 1,
               borderColor: Colors.border,
               padding: 14,
               marginBottom: 12,
+              textAlign: 'center',
             }}
           />
 
           <Button
             label="Join family"
             onPress={handleJoin}
-            disabled={babyCode.trim().length < 10}
+            disabled={babyCode.trim().length < 6}
             loading={loading}
           />
         </View>

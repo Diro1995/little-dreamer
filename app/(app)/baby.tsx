@@ -40,9 +40,10 @@ export default function BabyScreen() {
   };
 
   const handleShareCode = async () => {
-    if (!baby?.id) return;
+    if (!baby) return;
+    const code = baby.inviteCode ?? baby.id;
     await Share.share({
-      message: `Join my baby's Little Steps profile! Baby code: ${baby.id}`,
+      message: `Join ${baby.name}'s Little Steps profile!\n\nInvite code: ${code}\n\nDownload Little Steps and enter this code to get started.`,
     });
   };
 
@@ -209,20 +210,20 @@ export default function BabyScreen() {
             borderWidth: 1,
             borderColor: `${Colors.aurora}30`,
           }}>
-            <Text style={{ color: Colors.starlight, fontSize: 11, fontFamily: 'DMSans_500Medium', marginBottom: 6 }}>
-              Baby code — share with your partner
+            <Text style={{ color: Colors.starlight, fontSize: 11, fontFamily: 'DMSans_500Medium', marginBottom: 8 }}>
+              Invite code — share with your partner
             </Text>
             <Text
               selectable
               style={{
-                color: Colors.moonrise,
-                fontSize: 12,
-                fontFamily: 'DMSans_400Regular',
-                letterSpacing: 0.5,
-                marginBottom: 10,
+                color: Colors.aurora,
+                fontSize: 30,
+                fontFamily: 'DMSans_700Bold',
+                letterSpacing: 10,
+                marginBottom: 12,
               }}
             >
-              {baby.id}
+              {baby.inviteCode ?? '------'}
             </Text>
             <TouchableOpacity
               onPress={handleShareCode}

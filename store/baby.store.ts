@@ -23,6 +23,14 @@ const KEYS = {
   ONBOARDING: 'ld_onboarding_done',
 };
 
+// No ambiguous chars: excludes 0/O and 1/I
+function generateInviteCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 export const useBabyStore = create<BabyState>((set, get) => ({
   baby: null,
   currentCaregiver: null,
@@ -61,8 +69,12 @@ export const useBabyStore = create<BabyState>((set, get) => ({
         return;
       }
 
+      // Generate a short human-friendly invite code and store it on the baby row
+      const inviteCode = generateInviteCode();
+      await supabase.from('babies').update({ invite_code: inviteCode }).eq('id', row.id);
+
       // Replace local ID with Supabase UUID everywhere
-      const finalBaby = { ...baby, id: row.id };
+      const finalBaby = { ...baby, id: row.id, inviteCode };
       set({ baby: finalBaby });
       await AsyncStorage.setItem(KEYS.BABY, JSON.stringify(finalBaby));
 
@@ -179,6 +191,7 @@ export const useBabyStore = create<BabyState>((set, get) => ({
       dayStartHour: row.day_start_hour ?? 6,
       dayEndHour: row.day_end_hour ?? 20,
       caregivers,
+      inviteCode: row.invite_code ?? undefined,
     };
 
     const caregiver: Caregiver = {

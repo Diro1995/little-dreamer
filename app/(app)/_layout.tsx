@@ -5,8 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Clock, BarChart2, User } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { supabase } from '@/lib/supabase';
 import { useBabyStore } from '@/store/baby.store';
 import { useLogStore } from '@/store/log.store';
+import { useUIStore } from '@/store/ui.store';
 
 const ACTIVE = '#C8A97E';
 const INACTIVE = '#9BA3C2';
@@ -49,8 +51,9 @@ function TabIcon({
 
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
-  const { baby } = useBabyStore();
+  const { baby, loadFromSupabase } = useBabyStore();
   const { syncFromSupabase, subscribeToRealtime, flushOfflineQueue } = useLogStore();
+  const { showToast } = useUIStore();
   const unsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -71,6 +74,26 @@ export default function AppLayout() {
     });
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    if (!baby?.id) return;
+    const channel = supabase
+      .channel(`caregivers-join-${baby.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'caregiver_babies', filter: `baby_id=eq.${baby.id}` },
+        async (payload) => {
+          const { data: { user } } = await supabase.auth.getUser();
+          // Only notify if it's someone else joining, not ourselves
+          if ((payload.new as any).caregiver_id === user?.id) return;
+          const name = (payload.new as any).caregiver_name ?? 'Someone';
+          showToast(`${name} joined as a caregiver 👋`, 6000);
+          await loadFromSupabase();
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [baby?.id]);
 
   return (
     <View style={{ flex: 1 }}>

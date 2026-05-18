@@ -68,6 +68,7 @@ export interface Baby {
   savedMedications?: SavedMedication[];
   dayStartHour?: number;  // 0-23, default 6
   dayEndHour?: number;    // 0-23, default 20
+  inviteCode?: string;    // 6-char human-friendly code e.g. LUNA42
 }
 
 export interface LogEntry {
