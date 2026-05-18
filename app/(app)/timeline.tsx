@@ -23,6 +23,17 @@ export default function TimelineScreen() {
   const { entries } = useLogStore();
   const [filter, setFilter] = useState<EventType | 'all'>('all');
   const [activeSheet, setActiveSheet] = useState<EventType | null>(null);
+  const [editEntry, setEditEntry] = useState<LogEntry | null>(null);
+
+  const handleEdit = (entry: LogEntry) => {
+    setEditEntry(entry);
+    setActiveSheet(entry.type);
+  };
+
+  const handleClose = () => {
+    setActiveSheet(null);
+    setEditEntry(null);
+  };
 
   const filtered = useMemo(() => {
     if (filter === 'all') return entries;
@@ -102,21 +113,57 @@ export default function TimelineScreen() {
       </View>
 
       {filtered.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <Text style={{ fontSize: 48 }}>🌙</Text>
-          <Text style={{ color: Colors.moonrise, fontSize: 20, fontFamily: 'PlayfairDisplay_400Regular_Italic' }}>
-            Nothing logged yet
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
+          <Text style={{ fontSize: 48 }}>{entries.length === 0 ? '🌙' : '🔍'}</Text>
+          <Text
+            style={{
+              color: Colors.moonrise,
+              fontSize: 20,
+              fontFamily: 'PlayfairDisplay_400Regular_Italic',
+              textAlign: 'center',
+            }}
+          >
+            {entries.length === 0
+              ? 'Nothing logged yet'
+              : `No ${filter === 'feed_breast' ? 'feed' : filter} entries`}
           </Text>
-          <Text style={{ color: Colors.starlight, fontSize: 14, fontFamily: 'DMSans_400Regular' }}>
-            Tap the quick log on the home screen to get started
+          <Text
+            style={{
+              color: Colors.starlight,
+              fontSize: 14,
+              fontFamily: 'DMSans_400Regular',
+              textAlign: 'center',
+            }}
+          >
+            {entries.length === 0
+              ? 'Tap the quick log on the home screen to get started'
+              : 'Try a different filter to see other logs'}
           </Text>
+          {entries.length > 0 && filter !== 'all' && (
+            <TouchableOpacity
+              onPress={() => setFilter('all')}
+              style={{
+                marginTop: 4,
+                paddingHorizontal: 20,
+                paddingVertical: 9,
+                borderRadius: 99,
+                backgroundColor: Colors.twilight,
+                borderWidth: 1,
+                borderColor: Colors.border,
+              }}
+            >
+              <Text style={{ color: Colors.aurora, fontSize: 13, fontFamily: 'DMSans_500Medium' }}>
+                Clear filter
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <TimelineItem entry={item} delay={index * 30} />
+            <TimelineItem entry={item} delay={index * 30} onEdit={handleEdit} />
           )}
           renderSectionHeader={({ section }) => (
             <DayDivider date={section.date} />
@@ -127,7 +174,7 @@ export default function TimelineScreen() {
         />
       )}
 
-      <LogSheetRouter type={activeSheet} onClose={() => setActiveSheet(null)} />
+      <LogSheetRouter type={activeSheet} onClose={handleClose} editEntry={editEntry} />
     </View>
   );
 }

@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import type { SavedMedication } from '@/constants/types';
+import type { SavedMedication, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
 
 const UNITS = ['ml', 'drops', 'mg', 'IU', 'tablet'] as const;
 
-export function MedsLogger({ onClose }: { onClose: () => void }) {
-  const { addEntry } = useLogStore();
+export function MedsLogger({ onClose, editEntry }: { onClose: () => void; editEntry?: LogEntry }) {
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver, updateBaby } = useBabyStore();
   const { showToast } = useUIStore();
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -24,14 +28,19 @@ export function MedsLogger({ onClose }: { onClose: () => void }) {
   const handleLogMed = async (med: SavedMedication) => {
     if (!baby || !currentCaregiver) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: 'medicine',
-      startTime: new Date(),
-      metadata: { medicineName: med.name, doseMl: parseFloat(med.dose) },
-    });
-    showToast(`${med.name} logged ✓`);
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata: { medicineName: med.name, doseMl: parseFloat(med.dose) } });
+      showToast(`${med.name} updated ✓`);
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: 'medicine',
+        startTime: logTime,
+        metadata: { medicineName: med.name, doseMl: parseFloat(med.dose) },
+      });
+      showToast(`${med.name} logged ✓`);
+    }
     onClose();
   };
 
@@ -51,8 +60,26 @@ export function MedsLogger({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={{ paddingHorizontal: 24, paddingTop: 8, flex: 1 }}>
+      {/* Time row */}
+      <TouchableOpacity
+        onPress={() => setShowTimePicker((v) => !v)}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+      >
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+        <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={logTime}
+          mode="time"
+          display="spinner"
+          onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+          textColor={Colors.moonrise}
+          themeVariant="dark"
+        />
+      )}
       <Text style={{ color: Colors.moonrise, fontSize: 22, fontFamily: 'PlayfairDisplay_400Regular', textAlign: 'center', marginBottom: 16 }}>
-        Log Medicine
+        {editEntry ? 'Edit Medicine' : 'Log Medicine'}
       </Text>
 
       <ScrollView showsVerticalScrollIndicator={false}>

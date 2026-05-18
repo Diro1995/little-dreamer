@@ -1,4 +1,4 @@
-# Little Dreamer 🌙
+# Little Steps 👣
 
 A premium baby tracking app for exhausted parents. Core law: **any log in ≤ 2 taps, zero cognitive load at 3am.**
 

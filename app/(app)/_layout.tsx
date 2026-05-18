@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, AppState } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Clock, BarChart2, User } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useBabyStore } from '@/store/baby.store';
 import { useLogStore } from '@/store/log.store';
 
@@ -49,7 +50,7 @@ function TabIcon({
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
   const { baby } = useBabyStore();
-  const { syncFromSupabase, subscribeToRealtime } = useLogStore();
+  const { syncFromSupabase, subscribeToRealtime, flushOfflineQueue } = useLogStore();
   const unsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -64,7 +65,16 @@ export default function AppLayout() {
     };
   }, [baby?.id]);
 
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') flushOfflineQueue();
+    });
+    return () => sub.remove();
+  }, []);
+
   return (
+    <View style={{ flex: 1 }}>
+    <OfflineBanner />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -111,5 +121,6 @@ export default function AppLayout() {
         }}
       />
     </Tabs>
+    </View>
   );
 }

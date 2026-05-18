@@ -4,7 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { format, differenceInMinutes } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import { SleepLocation } from '@/constants/types';
+import { SleepLocation, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -22,16 +22,17 @@ const LOCATIONS: { value: SleepLocation; label: string }[] = [
 
 interface SleepLoggerProps {
   onClose: () => void;
+  editEntry?: LogEntry;
 }
 
-export function SleepLogger({ onClose }: SleepLoggerProps) {
+export function SleepLogger({ onClose, editEntry }: SleepLoggerProps) {
   const [tab, setTab] = useState<'quick' | 'timer'>('quick');
-  const [startTime, setStartTime] = useState(new Date());
+  const [startTime, setStartTime] = useState(editEntry?.startTime ?? new Date());
   const [stillSleeping, setStillSleeping] = useState(false);
-  const [endTime, setEndTime] = useState(new Date());
-  const [location, setLocation] = useState<SleepLocation | null>(null);
+  const [endTime, setEndTime] = useState(editEntry?.endTime ?? new Date());
+  const [location, setLocation] = useState<SleepLocation | null>(editEntry?.metadata.sleepLocation ?? null);
 
-  const { addEntry, activeSleep, startSleepTimer, endSleepTimer } = useLogStore();
+  const { addEntry, activeSleep, startSleepTimer, endSleepTimer, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
 
@@ -43,10 +44,19 @@ export function SleepLogger({ onClose }: SleepLoggerProps) {
     if (!baby || !currentCaregiver) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+    if (editEntry) {
+      await updateEntry(editEntry.id, {
+        startTime,
+        endTime: stillSleeping ? undefined : endTime,
+        durationMinutes: durationMinutes ?? undefined,
+        metadata: { sleepLocation: location ?? undefined },
+      });
+      showToast('Sleep updated ✓');
+      onClose();
+      return;
+    }
+
     if (stillSleeping) {
-      // Start the live timer anchored to the chosen start time — this is the
-      // only way to mark the baby as currently sleeping so the rest of the app
-      // (sleep card, nap prediction) agrees on sleep state.
       await startSleepTimer(baby.id, currentCaregiver.id, startTime);
       showToast('Sleep timer started 💤');
     } else {
@@ -206,7 +216,7 @@ export function SleepLogger({ onClose }: SleepLoggerProps) {
             ))}
           </View>
 
-          <Button label="Log Sleep" onPress={handleQuickLog} />
+          <Button label={editEntry ? 'Save Changes' : 'Log Sleep'} onPress={handleQuickLog} />
         </>
       ) : (
         <View style={{ alignItems: 'center', paddingVertical: 20 }}>

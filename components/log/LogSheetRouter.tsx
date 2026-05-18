@@ -8,11 +8,12 @@ import { NoteLogger } from './NoteLogger';
 import { TemperatureLogger } from './TemperatureLogger';
 import { MedsLogger } from './MedsLogger';
 import { JournalLogger } from './JournalLogger';
-import { EventType } from '@/constants/types';
+import { EventType, LogEntry } from '@/constants/types';
 
 interface LogSheetRouterProps {
   type: EventType | null;
   onClose: () => void;
+  editEntry?: LogEntry | null;
 }
 
 function sheetHeight(type: EventType | null): number {
@@ -25,32 +26,33 @@ function sheetHeight(type: EventType | null): number {
   return 60;
 }
 
-export function LogSheetRouter({ type, onClose }: LogSheetRouterProps) {
+export function LogSheetRouter({ type, onClose, editEntry }: LogSheetRouterProps) {
   const visible = type !== null;
 
   const renderContent = () => {
+    const e = editEntry ?? undefined;
     switch (type) {
       case 'diaper':
-        return <DiaperLogger onClose={onClose} />;
+        return <DiaperLogger onClose={onClose} editEntry={e} />;
       case 'feed_breast':
-        return <FeedLogger onClose={onClose} initialTab="breast" />;
+        return <FeedLogger onClose={onClose} initialTab="breast" editEntry={e} />;
       case 'feed_bottle':
-        return <FeedLogger onClose={onClose} initialTab="bottle" />;
+        return <FeedLogger onClose={onClose} initialTab="bottle" editEntry={e} />;
       case 'feed_solid':
-        return <FeedLogger onClose={onClose} initialTab="solid" />;
+        return <FeedLogger onClose={onClose} initialTab="solid" editEntry={e} />;
       case 'sleep':
-        return <SleepLogger onClose={onClose} />;
+        return <SleepLogger onClose={onClose} editEntry={e} />;
       case 'pump':
-        return <PumpLogger onClose={onClose} />;
+        return <PumpLogger onClose={onClose} editEntry={e} />;
       case 'note':
       case 'milestone':
         return <NoteLogger type={type} onClose={onClose} />;
       case 'temperature':
-        return <TemperatureLogger onClose={onClose} />;
+        return <TemperatureLogger onClose={onClose} editEntry={e} />;
       case 'medicine':
-        return <MedsLogger onClose={onClose} />;
+        return <MedsLogger onClose={onClose} editEntry={e} />;
       case 'journal':
-        return <JournalLogger onClose={onClose} />;
+        return <JournalLogger onClose={onClose} editEntry={e} />;
       default:
         return null;
     }

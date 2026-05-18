@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import { DiaperType } from '@/constants/types';
+import { DiaperType, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -16,29 +18,55 @@ const OPTIONS: { type: DiaperType; icon: string; label: string }[] = [
 
 interface DiaperLoggerProps {
   onClose: () => void;
+  editEntry?: LogEntry;
 }
 
-export function DiaperLogger({ onClose }: DiaperLoggerProps) {
-  const { addEntry } = useLogStore();
+export function DiaperLogger({ onClose, editEntry }: DiaperLoggerProps) {
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleLog = async (diaperType: DiaperType) => {
     if (!baby || !currentCaregiver) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: 'diaper',
-      startTime: new Date(),
-      metadata: { diaperType },
-    });
-    showToast(`${diaperType.charAt(0).toUpperCase() + diaperType.slice(1)} diaper logged ✓`);
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata: { diaperType } });
+      showToast('Diaper updated ✓');
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: 'diaper',
+        startTime: logTime,
+        metadata: { diaperType },
+      });
+      showToast(`${diaperType.charAt(0).toUpperCase() + diaperType.slice(1)} diaper logged ✓`);
+    }
     onClose();
   };
 
   return (
     <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
+      {/* Time row */}
+      <TouchableOpacity
+        onPress={() => setShowTimePicker((v) => !v)}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+      >
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+        <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={logTime}
+          mode="time"
+          display="spinner"
+          onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+          textColor={Colors.moonrise}
+          themeVariant="dark"
+        />
+      )}
       <Text
         style={{
           color: Colors.moonrise,
@@ -48,7 +76,7 @@ export function DiaperLogger({ onClose }: DiaperLoggerProps) {
           textAlign: 'center',
         }}
       >
-        Log Diaper
+        {editEntry ? 'Edit Diaper' : 'Log Diaper'}
       </Text>
       <Text
         style={{
@@ -59,7 +87,7 @@ export function DiaperLogger({ onClose }: DiaperLoggerProps) {
           marginBottom: 28,
         }}
       >
-        Tap to log instantly
+        {editEntry ? 'Tap type to update' : 'Tap to log instantly'}
       </Text>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>

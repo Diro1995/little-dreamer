@@ -10,63 +10,48 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Ellipse, Circle, G } from 'react-native-svg';
 import { Colors } from '@/constants/theme';
 import { StarField } from '@/components/ui/StarField';
 import { Button } from '@/components/ui/Button';
 
 const { width, height } = Dimensions.get('window');
 
-function MoonIcon() {
+function FootstepsIcon() {
+  const c = Colors.aurora;
   return (
-    <View style={{ width: 80, height: 80, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Crescent moon SVG-like via views */}
-      <View
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 36,
-          backgroundColor: Colors.aurora,
-          shadowColor: Colors.aurora,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.8,
-          shadowRadius: 24,
-          overflow: 'hidden',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* Inner cutout to make crescent */}
-        <View
-          style={{
-            position: 'absolute',
-            top: -8,
-            right: -12,
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: Colors.gradientBase,
-          }}
-        />
-        {/* Sleeping face dots */}
-        <View style={{ position: 'absolute', bottom: 18, left: 12 }}>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            <View style={{ width: 5, height: 2, borderRadius: 1, backgroundColor: Colors.midnight }} />
-            <View style={{ width: 5, height: 2, borderRadius: 1, backgroundColor: Colors.midnight }} />
-          </View>
-          <View style={{
-            width: 16,
-            height: 6,
-            borderRadius: 3,
-            borderBottomWidth: 2,
-            borderBottomColor: Colors.midnight,
-            borderLeftWidth: 0,
-            borderRightWidth: 0,
-            borderTopWidth: 0,
-            marginTop: 4,
-            marginLeft: 2,
-          }} />
-        </View>
-      </View>
+    <View
+      style={{
+        width: 88,
+        height: 88,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: Colors.aurora,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.55,
+        shadowRadius: 22,
+      }}
+    >
+      <Svg width={80} height={80} viewBox="0 0 80 80">
+        {/* Left foot — upper left, angled inward */}
+        <G transform="rotate(-18, 26, 44)">
+          <Ellipse cx={26} cy={44} rx={9} ry={13} fill={c} />
+          <Circle cx={16} cy={26} r={4.5} fill={c} />
+          <Circle cx={22} cy={21} r={4} fill={c} />
+          <Circle cx={29} cy={19} r={3.5} fill={c} />
+          <Circle cx={35} cy={22} r={3} fill={c} />
+          <Circle cx={39} cy={27} r={2.5} fill={c} />
+        </G>
+        {/* Right foot — lower right, angled inward (mirror) */}
+        <G transform="rotate(18, 54, 54)">
+          <Ellipse cx={54} cy={54} rx={9} ry={13} fill={c} />
+          <Circle cx={44} cy={36} r={2.5} fill={c} />
+          <Circle cx={48} cy={31} r={3} fill={c} />
+          <Circle cx={55} cy={29} r={3.5} fill={c} />
+          <Circle cx={62} cy={32} r={4} fill={c} />
+          <Circle cx={66} cy={37} r={4.5} fill={c} />
+        </G>
+      </Svg>
     </View>
   );
 }
@@ -136,7 +121,7 @@ export default function WelcomeScreen() {
       >
         {/* Icon */}
         <Animated.View style={[iconStyle, { marginBottom: 32 }]}>
-          <MoonIcon />
+          <FootstepsIcon />
         </Animated.View>
 
         {/* Title + tagline */}

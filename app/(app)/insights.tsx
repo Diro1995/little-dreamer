@@ -73,13 +73,28 @@ export default function InsightsScreen() {
         </View>
 
         {entries.length === 0 ? (
-          <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
-            <Text style={{ fontSize: 48 }}>🌙</Text>
-            <Text style={{ color: Colors.moonrise, fontSize: 20, fontFamily: 'PlayfairDisplay_400Regular' }}>
-              No data yet
+          <View style={{ alignItems: 'center', paddingTop: 60, gap: 12, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 48 }}>📊</Text>
+            <Text
+              style={{
+                color: Colors.moonrise,
+                fontSize: 20,
+                fontFamily: 'PlayfairDisplay_400Regular_Italic',
+                textAlign: 'center',
+              }}
+            >
+              Patterns appear over time
             </Text>
-            <Text style={{ color: Colors.starlight, fontSize: 14, fontFamily: 'DMSans_400Regular', textAlign: 'center' }}>
-              Start logging to see patterns here
+            <Text
+              style={{
+                color: Colors.starlight,
+                fontSize: 14,
+                fontFamily: 'DMSans_400Regular',
+                textAlign: 'center',
+                lineHeight: 22,
+              }}
+            >
+              Log a few days of feeds and sleep and you'll see charts, averages, and trends here.
             </Text>
           </View>
         ) : (

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import { TempUnit, TempMethod } from '@/constants/types';
+import { TempUnit, TempMethod, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -21,14 +23,16 @@ function tempLabel(c: number): string {
   return 'High fever';
 }
 
-export function TemperatureLogger({ onClose }: { onClose: () => void }) {
-  const { addEntry } = useLogStore();
+export function TemperatureLogger({ onClose, editEntry }: { onClose: () => void; editEntry?: LogEntry }) {
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
 
-  const [tempC, setTempC] = useState(37.0);
-  const [unit, setUnit] = useState<TempUnit>('C');
-  const [method, setMethod] = useState<TempMethod>('Forehead');
+  const [tempC, setTempC] = useState(editEntry?.metadata.tempCelsius ?? 37.0);
+  const [unit, setUnit] = useState<TempUnit>(editEntry?.metadata.tempUnit ?? 'C');
+  const [method, setMethod] = useState<TempMethod>(editEntry?.metadata.tempMethod ?? 'Forehead');
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const displayed = unit === 'C' ? tempC : +(tempC * 9 / 5 + 32).toFixed(1);
   const step = unit === 'C' ? 0.1 : 0.2;
@@ -43,21 +47,44 @@ export function TemperatureLogger({ onClose }: { onClose: () => void }) {
   const handleLog = async () => {
     if (!baby || !currentCaregiver) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: 'temperature',
-      startTime: new Date(),
-      metadata: { tempCelsius: tempC, tempUnit: unit, tempMethod: method },
-    });
-    showToast(`Temperature logged: ${displayed}°${unit} ✓`);
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata: { tempCelsius: tempC, tempUnit: unit, tempMethod: method } });
+      showToast('Temperature updated ✓');
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: 'temperature',
+        startTime: logTime,
+        metadata: { tempCelsius: tempC, tempUnit: unit, tempMethod: method },
+      });
+      showToast(`Temperature logged: ${displayed}°${unit} ✓`);
+    }
     onClose();
   };
 
   return (
     <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+      {/* Time row */}
+      <TouchableOpacity
+        onPress={() => setShowTimePicker((v) => !v)}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+      >
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+        <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={logTime}
+          mode="time"
+          display="spinner"
+          onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+          textColor={Colors.moonrise}
+          themeVariant="dark"
+        />
+      )}
       <Text style={{ color: Colors.moonrise, fontSize: 22, fontFamily: 'PlayfairDisplay_400Regular', textAlign: 'center', marginBottom: 20 }}>
-        Log Temperature
+        {editEntry ? 'Edit Temperature' : 'Log Temperature'}
       </Text>
 
       {/* °C / °F toggle */}
@@ -114,7 +141,7 @@ export function TemperatureLogger({ onClose }: { onClose: () => void }) {
         onPress={handleLog}
         style={{ backgroundColor: Colors.tempGlow, borderRadius: 28, height: 54, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'DMSans_700Bold' }}>Log Temperature</Text>
+        <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'DMSans_700Bold' }}>{editEntry ? 'Save Changes' : 'Log Temperature'}</Text>
       </TouchableOpacity>
     </View>
   );

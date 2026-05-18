@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import { EventType, BreastSide } from '@/constants/types';
+import { EventType, BreastSide, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -18,17 +20,24 @@ type FeedTab = 'breast' | 'bottle' | 'solid';
 interface FeedLoggerProps {
   onClose: () => void;
   initialTab?: FeedTab;
+  editEntry?: LogEntry;
 }
 
-export function FeedLogger({ onClose, initialTab = 'breast' }: FeedLoggerProps) {
-  const [tab, setTab] = useState<FeedTab>(initialTab);
-  const [breastSide, setBreastSide] = useState<BreastSide>('left');
-  const [volumeMl, setVolumeMl] = useState(120);
+export function FeedLogger({ onClose, initialTab = 'breast', editEntry }: FeedLoggerProps) {
+  const initTab: FeedTab =
+    editEntry?.type === 'feed_bottle' ? 'bottle'
+    : editEntry?.type === 'feed_solid' ? 'solid'
+    : initialTab;
+  const [tab, setTab] = useState<FeedTab>(initTab);
+  const [breastSide, setBreastSide] = useState<BreastSide>(editEntry?.metadata.breastSide ?? 'left');
+  const [volumeMl, setVolumeMl] = useState(editEntry?.metadata.volumeMl ?? 120);
   const [unit, setUnit] = useState<'ml' | 'oz'>('ml');
-  const [selectedFoods, setSelectedFoods] = useState<string[]>([]);
+  const [selectedFoods, setSelectedFoods] = useState<string[]>(editEntry?.metadata.solidFoods ?? []);
   const [customFood, setCustomFood] = useState('');
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const { addEntry } = useLogStore();
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
 
@@ -62,19 +71,25 @@ export function FeedLogger({ onClose, initialTab = 'breast' }: FeedLoggerProps) 
       ? [...selectedFoods, customFood.trim()]
       : selectedFoods;
 
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: typeMap[tab],
-      startTime: new Date(),
-      metadata: {
-        breastSide: tab === 'breast' ? breastSide : undefined,
-        volumeMl: tab === 'bottle' ? volumeMl : undefined,
-        solidFoods: tab === 'solid' ? foods : undefined,
-      },
-    });
+    const metadata = {
+      breastSide: tab === 'breast' ? breastSide : undefined,
+      volumeMl: tab === 'bottle' ? volumeMl : undefined,
+      solidFoods: tab === 'solid' ? foods : undefined,
+    };
 
-    showToast('Feed logged ✓');
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata });
+      showToast('Feed updated ✓');
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: typeMap[tab],
+        startTime: logTime,
+        metadata,
+      });
+      showToast('Feed logged ✓');
+    }
     onClose();
   };
 
@@ -83,6 +98,24 @@ export function FeedLogger({ onClose, initialTab = 'breast' }: FeedLoggerProps) 
       contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 20 }}
       showsVerticalScrollIndicator={false}
     >
+      {/* Time row */}
+      <TouchableOpacity
+        onPress={() => setShowTimePicker((v) => !v)}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+      >
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+        <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={logTime}
+          mode="time"
+          display="spinner"
+          onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+          textColor={Colors.moonrise}
+          themeVariant="dark"
+        />
+      )}
       <Text
         style={{
           color: Colors.moonrise,
@@ -92,7 +125,7 @@ export function FeedLogger({ onClose, initialTab = 'breast' }: FeedLoggerProps) 
           marginBottom: 16,
         }}
       >
-        Log Feed
+        {editEntry ? 'Edit Feed' : 'Log Feed'}
       </Text>
 
       {/* Tabs */}
@@ -256,7 +289,7 @@ export function FeedLogger({ onClose, initialTab = 'breast' }: FeedLoggerProps) 
         </>
       )}
 
-      <Button label="Log Feed" onPress={handleLog} />
+      <Button label={editEntry ? 'Save Changes' : 'Log Feed'} onPress={handleLog} />
     </ScrollView>
   );
 }

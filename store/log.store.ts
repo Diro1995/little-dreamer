@@ -7,6 +7,8 @@ import { format } from 'date-fns';
 interface LogState {
   entries: LogEntry[];
   activeSleep: LogEntry | null;
+  offlineQueue: OfflineOp[];
+  pendingSync: boolean;
   addEntry: (entry: Omit<LogEntry, 'id' | 'createdAt'>) => Promise<LogEntry>;
   updateEntry: (id: string, updates: Partial<LogEntry>) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
@@ -15,12 +17,19 @@ interface LogState {
   loadFromStorage: () => Promise<void>;
   syncFromSupabase: (babyId: string) => Promise<void>;
   subscribeToRealtime: (babyId: string) => () => void;
+  flushOfflineQueue: () => Promise<void>;
   getEntriesForDay: (date: Date) => LogEntry[];
   getRecentEntries: (limit?: number) => LogEntry[];
 }
 
 const STORAGE_KEY = 'ld_log_entries';
 const ACTIVE_SLEEP_KEY = 'ld_active_sleep';
+const OFFLINE_QUEUE_KEY = 'ld_offline_queue';
+
+type OfflineOp =
+  | { op: 'insert'; entry: LogEntry; authUserId: string }
+  | { op: 'update'; id: string; dbUpdates: Record<string, any>; authUserId: string }
+  | { op: 'delete'; id: string; authUserId: string };
 
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -71,6 +80,8 @@ function entryToDbRow(entry: LogEntry, authUserId: string) {
 export const useLogStore = create<LogState>((set, get) => ({
   entries: [],
   activeSleep: null,
+  offlineQueue: [],
+  pendingSync: false,
 
   addEntry: async (entryData) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -86,10 +97,14 @@ export const useLogStore = create<LogState>((set, get) => ({
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 
     if (user) {
-      const { error } = await supabase
-        .from('log_entries')
-        .insert(entryToDbRow(entry, user.id));
-      if (error) console.error('addEntry sync error:', error.message);
+      try {
+        const { error } = await supabase.from('log_entries').insert(entryToDbRow(entry, user.id));
+        if (error) throw new Error(error.message);
+      } catch {
+        const q = [...get().offlineQueue, { op: 'insert' as const, entry, authUserId: user.id }];
+        set({ offlineQueue: q, pendingSync: true });
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+      }
     }
 
     return entry;
@@ -108,6 +123,8 @@ export const useLogStore = create<LogState>((set, get) => ({
     const dbUpdates: Record<string, any> = {};
     if (updates.endTime !== undefined)
       dbUpdates.end_time = updates.endTime?.toISOString() ?? null;
+    if (updates.startTime !== undefined)
+      dbUpdates.start_time = updates.startTime.toISOString();
     if (updates.durationMinutes !== undefined)
       dbUpdates.duration_minutes = updates.durationMinutes;
     if (updates.metadata !== undefined)
@@ -116,11 +133,14 @@ export const useLogStore = create<LogState>((set, get) => ({
       dbUpdates.notes = updates.notes;
 
     if (Object.keys(dbUpdates).length > 0) {
-      await supabase
-        .from('log_entries')
-        .update(dbUpdates)
-        .eq('id', id)
-        .eq('caregiver_id', user.id);
+      try {
+        const { error } = await supabase.from('log_entries').update(dbUpdates).eq('id', id).eq('caregiver_id', user.id);
+        if (error) throw new Error(error.message);
+      } catch {
+        const q = [...get().offlineQueue, { op: 'update' as const, id, dbUpdates, authUserId: user.id }];
+        set({ offlineQueue: q, pendingSync: true });
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+      }
     }
   },
 
@@ -136,11 +156,14 @@ export const useLogStore = create<LogState>((set, get) => ({
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from('log_entries')
-        .delete()
-        .eq('id', id)
-        .eq('caregiver_id', user.id);
+      try {
+        const { error } = await supabase.from('log_entries').delete().eq('id', id).eq('caregiver_id', user.id);
+        if (error) throw new Error(error.message);
+      } catch {
+        const q = [...get().offlineQueue, { op: 'delete' as const, id, authUserId: user.id }];
+        set({ offlineQueue: q, pendingSync: true });
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+      }
     }
   },
 
@@ -162,10 +185,14 @@ export const useLogStore = create<LogState>((set, get) => ({
     await AsyncStorage.setItem(ACTIVE_SLEEP_KEY, JSON.stringify(entry));
 
     if (user) {
-      const { error } = await supabase
-        .from('log_entries')
-        .insert(entryToDbRow(entry, user.id));
-      if (error) console.error('startSleepTimer sync error:', error.message);
+      try {
+        const { error } = await supabase.from('log_entries').insert(entryToDbRow(entry, user.id));
+        if (error) throw new Error(error.message);
+      } catch {
+        const q = [...get().offlineQueue, { op: 'insert' as const, entry, authUserId: user.id }];
+        set({ offlineQueue: q, pendingSync: true });
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(q));
+      }
     }
 
     return entry;
@@ -199,15 +226,22 @@ export const useLogStore = create<LogState>((set, get) => ({
   },
 
   loadFromStorage: async () => {
-    const [entriesJson, activeSleepJson] = await Promise.all([
+    const [entriesJson, activeSleepJson, queueJson] = await Promise.all([
       AsyncStorage.getItem(STORAGE_KEY),
       AsyncStorage.getItem(ACTIVE_SLEEP_KEY),
+      AsyncStorage.getItem(OFFLINE_QUEUE_KEY),
     ]);
     if (entriesJson) {
       set({ entries: JSON.parse(entriesJson).map(deserializeEntry) });
     }
     if (activeSleepJson) {
       set({ activeSleep: deserializeEntry(JSON.parse(activeSleepJson)) });
+    }
+    if (queueJson) {
+      const queue: OfflineOp[] = JSON.parse(queueJson).map((op: any) =>
+        op.op === 'insert' ? { ...op, entry: deserializeEntry(op.entry) } : op
+      );
+      set({ offlineQueue: queue, pendingSync: queue.length > 0 });
     }
   },
 
@@ -267,6 +301,39 @@ export const useLogStore = create<LogState>((set, get) => ({
     return () => {
       supabase.removeChannel(channel);
     };
+  },
+
+  flushOfflineQueue: async () => {
+    const queue = get().offlineQueue;
+    if (queue.length === 0) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const remaining: OfflineOp[] = [];
+    for (const op of queue) {
+      try {
+        if (op.op === 'insert') {
+          const { error } = await supabase.from('log_entries').insert(entryToDbRow(op.entry, op.authUserId));
+          if (error) throw new Error(error.message);
+        } else if (op.op === 'update') {
+          const { error } = await supabase.from('log_entries').update(op.dbUpdates).eq('id', op.id).eq('caregiver_id', op.authUserId);
+          if (error) throw new Error(error.message);
+        } else if (op.op === 'delete') {
+          const { error } = await supabase.from('log_entries').delete().eq('id', op.id).eq('caregiver_id', op.authUserId);
+          if (error) throw new Error(error.message);
+        }
+      } catch {
+        remaining.push(op);
+      }
+    }
+
+    set({ offlineQueue: remaining, pendingSync: remaining.length > 0 });
+    if (remaining.length === 0) {
+      await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
+    } else {
+      await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(remaining));
+    }
   },
 
   getEntriesForDay: (date) => {

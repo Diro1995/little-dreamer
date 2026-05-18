@@ -115,15 +115,52 @@ export default function HomeScreen() {
           onSleepLongPress={handleSleepLongPress}
         />
 
-        {/* Today's summary */}
-        <TodaySummary
-          feeds={stats.feeds}
-          sleepHours={stats.sleepHours}
-          diapers={stats.diapers}
-        />
-
-        {/* Recent */}
-        <RecentFeed entries={entries} />
+        {/* Today's summary + recent, or first-time empty state */}
+        {entries.length > 0 ? (
+          <>
+            <TodaySummary
+              feeds={stats.feeds}
+              sleepHours={stats.sleepHours}
+              diapers={stats.diapers}
+            />
+            <RecentFeed entries={entries} />
+          </>
+        ) : (
+          <View
+            style={{
+              backgroundColor: Colors.cardBg,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: Colors.border,
+              padding: 24,
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <Text style={{ fontSize: 36 }}>👣</Text>
+            <Text
+              style={{
+                color: Colors.moonrise,
+                fontSize: 18,
+                fontFamily: 'PlayfairDisplay_400Regular_Italic',
+                textAlign: 'center',
+              }}
+            >
+              Ready for the first log?
+            </Text>
+            <Text
+              style={{
+                color: Colors.starlight,
+                fontSize: 14,
+                fontFamily: 'DMSans_400Regular',
+                textAlign: 'center',
+                lineHeight: 22,
+              }}
+            >
+              Tap any button above to start tracking. Everything saves instantly — even offline.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       <LogSheetRouter type={activeSheet} onClose={() => setActiveSheet(null)} />

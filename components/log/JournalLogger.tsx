@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
-import { JournalEntryType } from '@/constants/types';
+import { JournalEntryType, LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -20,32 +22,40 @@ const MILESTONES = [
   'First word', 'First steps', 'First tooth', 'Clapped hands',
 ];
 
-export function JournalLogger({ onClose }: { onClose: () => void }) {
-  const { addEntry } = useLogStore();
+export function JournalLogger({ onClose, editEntry }: { onClose: () => void; editEntry?: LogEntry }) {
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
 
-  const [entryType, setEntryType] = useState<JournalEntryType>('note');
-  const [milestoneTitle, setMilestoneTitle] = useState('');
-  const [text, setText] = useState('');
+  const [entryType, setEntryType] = useState<JournalEntryType>(editEntry?.metadata.journalType ?? 'note');
+  const [milestoneTitle, setMilestoneTitle] = useState(editEntry?.metadata.milestoneTitle ?? '');
+  const [text, setText] = useState(editEntry?.metadata.journalText ?? editEntry?.notes ?? '');
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const canLog = text.trim().length > 0 || (entryType === 'milestone' && milestoneTitle.trim().length > 0);
 
   const handleLog = async () => {
     if (!baby || !currentCaregiver || !canLog) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: 'journal',
-      startTime: new Date(),
-      metadata: {
-        journalType: entryType,
-        journalText: text.trim(),
-        milestoneTitle: entryType === 'milestone' ? milestoneTitle.trim() : undefined,
-      },
-    });
-    showToast(`${entryType.charAt(0).toUpperCase() + entryType.slice(1)} saved ✓`);
+    const metadata = {
+      journalType: entryType,
+      journalText: text.trim(),
+      milestoneTitle: entryType === 'milestone' ? milestoneTitle.trim() : undefined,
+    };
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata });
+      showToast('Journal entry updated ✓');
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: 'journal',
+        startTime: logTime,
+        metadata,
+      });
+      showToast(`${entryType.charAt(0).toUpperCase() + entryType.slice(1)} saved ✓`);
+    }
     onClose();
   };
 
@@ -59,8 +69,26 @@ export function JournalLogger({ onClose }: { onClose: () => void }) {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Time row */}
+        <TouchableOpacity
+          onPress={() => setShowTimePicker((v) => !v)}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+        >
+          <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+          <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+        </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={logTime}
+            mode="time"
+            display="spinner"
+            onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+            textColor={Colors.moonrise}
+            themeVariant="dark"
+          />
+        )}
         <Text style={{ color: Colors.moonrise, fontSize: 22, fontFamily: 'PlayfairDisplay_400Regular', textAlign: 'center', marginBottom: 16 }}>
-          Journal
+          {editEntry ? 'Edit Journal' : 'Journal'}
         </Text>
 
         {/* Type chips */}
@@ -114,7 +142,7 @@ export function JournalLogger({ onClose }: { onClose: () => void }) {
           disabled={!canLog}
           style={{ backgroundColor: Colors.journalGlow, borderRadius: 28, height: 54, alignItems: 'center', justifyContent: 'center', opacity: canLog ? 1 : 0.4 }}
         >
-          <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'DMSans_700Bold' }}>Save Entry</Text>
+          <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'DMSans_700Bold' }}>{editEntry ? 'Save Changes' : 'Save Entry'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

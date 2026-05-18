@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import { format } from 'date-fns';
 import { Colors } from '@/constants/theme';
+import { LogEntry } from '@/constants/types';
 import { useLogStore } from '@/store/log.store';
 import { useBabyStore } from '@/store/baby.store';
 import { useUIStore } from '@/store/ui.store';
@@ -45,13 +48,16 @@ function VolumeInput({
 
 interface PumpLoggerProps {
   onClose: () => void;
+  editEntry?: LogEntry;
 }
 
-export function PumpLogger({ onClose }: PumpLoggerProps) {
-  const [leftMl, setLeftMl] = useState(0);
-  const [rightMl, setRightMl] = useState(0);
+export function PumpLogger({ onClose, editEntry }: PumpLoggerProps) {
+  const [leftMl, setLeftMl] = useState(editEntry?.metadata.leftMl ?? 0);
+  const [rightMl, setRightMl] = useState(editEntry?.metadata.rightMl ?? 0);
+  const [logTime, setLogTime] = useState<Date>(editEntry?.startTime ?? new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const { addEntry } = useLogStore();
+  const { addEntry, updateEntry } = useLogStore();
   const { baby, currentCaregiver } = useBabyStore();
   const { showToast } = useUIStore();
 
@@ -60,14 +66,19 @@ export function PumpLogger({ onClose }: PumpLoggerProps) {
   const handleLog = async () => {
     if (!baby || !currentCaregiver) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addEntry({
-      babyId: baby.id,
-      caregiverId: currentCaregiver.id,
-      type: 'pump',
-      startTime: new Date(),
-      metadata: { leftMl, rightMl },
-    });
-    showToast(`Pump logged · ${total}ml total ✓`);
+    if (editEntry) {
+      await updateEntry(editEntry.id, { startTime: logTime, metadata: { leftMl, rightMl } });
+      showToast('Pump updated ✓');
+    } else {
+      await addEntry({
+        babyId: baby.id,
+        caregiverId: currentCaregiver.id,
+        type: 'pump',
+        startTime: logTime,
+        metadata: { leftMl, rightMl },
+      });
+      showToast(`Pump logged · ${total}ml total ✓`);
+    }
     onClose();
   };
 
@@ -76,6 +87,24 @@ export function PumpLogger({ onClose }: PumpLoggerProps) {
       contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 20 }}
       showsVerticalScrollIndicator={false}
     >
+      {/* Time row */}
+      <TouchableOpacity
+        onPress={() => setShowTimePicker((v) => !v)}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.border }}
+      >
+        <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_500Medium', textTransform: 'uppercase', letterSpacing: 0.8 }}>Time</Text>
+        <Text style={{ color: Colors.aurora, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>{format(logTime, 'h:mm a')}</Text>
+      </TouchableOpacity>
+      {showTimePicker && (
+        <DateTimePicker
+          value={logTime}
+          mode="time"
+          display="spinner"
+          onChange={(_, d) => { if (d) setLogTime(d); setShowTimePicker(false); }}
+          textColor={Colors.moonrise}
+          themeVariant="dark"
+        />
+      )}
       <Text
         style={{
           color: Colors.moonrise,
@@ -85,7 +114,7 @@ export function PumpLogger({ onClose }: PumpLoggerProps) {
           marginBottom: 24,
         }}
       >
-        Log Pump
+        {editEntry ? 'Edit Pump' : 'Log Pump'}
       </Text>
 
       <View style={{ flexDirection: 'row', gap: 16, marginBottom: 24 }}>
@@ -103,7 +132,7 @@ export function PumpLogger({ onClose }: PumpLoggerProps) {
         </View>
       )}
 
-      <Button label="Log Pump" onPress={handleLog} disabled={total === 0} />
+      <Button label={editEntry ? 'Save Changes' : 'Log Pump'} onPress={handleLog} disabled={total === 0} />
     </ScrollView>
   );
 }
