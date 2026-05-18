@@ -16,8 +16,8 @@ import { useAuthStore } from '@/store/auth.store';
 export default function JoinFamilyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { loadFromSupabase } = useBabyStore();
-  const { syncFromSupabase } = useLogStore();
+  const { loadFromSupabase, reset: resetBaby } = useBabyStore();
+  const { syncFromSupabase, reset: resetLogs } = useLogStore();
   const { signOut } = useAuthStore();
 
   const [caregiverName, setCaregiverName] = useState('');
@@ -92,6 +92,7 @@ export default function JoinFamilyScreen() {
         style: 'destructive',
         onPress: async () => {
           await signOut();
+          await Promise.all([resetBaby(), resetLogs()]);
           router.replace('/(auth)/welcome');
         },
       },

@@ -20,13 +20,14 @@ import { predictNextNap } from '@/lib/sleep-engine';
 import { formatAge, getCorrectedAgeWeeks } from '@/lib/age';
 import { EventType } from '@/constants/types';
 
-function getGreeting(): string {
+function getGreeting(name?: string): string {
   const h = getHours(new Date());
-  if (h < 5)  return 'Still up?';
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  if (h < 21) return 'Good evening';
-  return 'Good night';
+  let base: string;
+  if (h >= 5 && h < 12)  base = 'Good morning';
+  else if (h >= 12 && h < 17) base = 'Good afternoon';
+  else if (h >= 17 && h < 21) base = 'Good evening';
+  else base = 'Up late? 🌙';
+  return name ? `${base}, ${name}` : base;
 }
 
 export default function HomeScreen() {
@@ -86,7 +87,7 @@ export default function HomeScreen() {
             </View>
             <View>
               <Text style={{ color: Colors.moonrise, fontSize: 15, fontFamily: 'DMSans_500Medium' }}>
-                {getGreeting()}, {currentCaregiver?.name ?? 'there'}
+                {getGreeting(currentCaregiver?.name)}
               </Text>
               {baby && (
                 <Text style={{ color: Colors.starlight, fontSize: 12, fontFamily: 'DMSans_400Regular', marginTop: 1 }}>

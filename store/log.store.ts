@@ -18,6 +18,7 @@ interface LogState {
   syncFromSupabase: (babyId: string) => Promise<void>;
   subscribeToRealtime: (babyId: string) => () => void;
   flushOfflineQueue: () => Promise<void>;
+  reset: () => Promise<void>;
   getEntriesForDay: (date: Date) => LogEntry[];
   getRecentEntries: (limit?: number) => LogEntry[];
 }
@@ -334,6 +335,11 @@ export const useLogStore = create<LogState>((set, get) => ({
     } else {
       await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(remaining));
     }
+  },
+
+  reset: async () => {
+    set({ entries: [], activeSleep: null, offlineQueue: [], pendingSync: false });
+    await AsyncStorage.multiRemove([STORAGE_KEY, ACTIVE_SLEEP_KEY, OFFLINE_QUEUE_KEY]);
   },
 
   getEntriesForDay: (date) => {

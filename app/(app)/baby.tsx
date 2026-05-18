@@ -18,7 +18,7 @@ export default function BabyScreen() {
   const insets = useSafeAreaInsets();
   const { baby, currentCaregiver, updateBaby, reset } = useBabyStore();
   const { signOut } = useAuthStore();
-  const { entries } = useLogStore();
+  const { entries, reset: resetLogs } = useLogStore();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(baby?.name ?? '');
   const [use24h, setUse24h] = useState(false);
@@ -32,7 +32,7 @@ export default function BabyScreen() {
         style: 'destructive',
         onPress: async () => {
           await signOut();
-          await reset();
+          await Promise.all([reset(), resetLogs()]);
           router.replace('/(auth)/welcome');
         },
       },

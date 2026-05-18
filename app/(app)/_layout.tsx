@@ -10,7 +10,7 @@ import { useBabyStore } from '@/store/baby.store';
 import { useLogStore } from '@/store/log.store';
 import { useUIStore } from '@/store/ui.store';
 
-const ACTIVE = '#C8A97E';
+const ACTIVE = Colors.aurora;
 const INACTIVE = '#9BA3C2';
 
 function TabIcon({
