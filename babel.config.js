@@ -9,7 +9,7 @@ module.exports = function (api) {
         root: ['./'],
         alias: { '@': './' },
       }],
-      'react-native-reanimated/plugin',
+      'react-native-worklets-core/plugin',
     ],
   };
 };
